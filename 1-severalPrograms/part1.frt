@@ -38,6 +38,16 @@
           until
 	  drop 1 ( a 1 )
 ;
+
+: prime?mem 
+	prime?
+	4 allot ( typical integer size is 4 bytes ) 
+	dup
+	rot
+	swap
+	!	
+;
+
 : test_prime ." prime: " cr 
       0 prime?		. ."  - " . cr 
       1 prime?		. ."  - " . cr 
@@ -52,10 +62,6 @@
       17 prime?         . ."  - " . cr 
       19 prime?	        . ."  - " . cr
       887 prime?        . ."  - " . cr
-      100271 prime?     . ."  - " . cr
-      10000379 prime?   . ."  - " . cr
-      100000393 prime?  . ."  - " . cr
-
 ;
 test_prime
               
