@@ -41,7 +41,7 @@
 
 : prime?mem 
 	prime?
-	4 allot ( typical integer size is 4 bytes ) 
+	1 allot ( the result's type is bool ) 
 	dup
 	rot
 	swap
