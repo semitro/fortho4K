@@ -1,4 +1,4 @@
-( SLS Course project, step #1)
+( SLS Course project, step #1 )
 ( Performed by Oshchepkov Artem, P3202 )
 
 ( Task #1 - is a number parity? )
