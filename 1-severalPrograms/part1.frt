@@ -1,15 +1,13 @@
-( task number 1 )
-: mask_smallest 1 and ;
-: parity_num? dup mask_smallest not ;
+( SLS Course project, step #1)
+( Performed by Oshchepkov Artem, P3202 )
 
-( task number 2 )
-( a b - b a - b a a - a a b - a [a%b] - a [a%b] 0 - a [[a%b] == 0] )
-( : divide? swap dup rot dup % 0 = ; )
+( Task #1 - is a number parity? )
+: mask_smallest 1 and ;               ( a & 0x00..1 )
+( a - a [is a parity?] )
+: parity_num? dup mask_smallest not ; ( clearly )
 
+( Task #2 - is a number prime? )
 
-
-
-( a - [a-1] ) 
 : dec 1 - ;
 : inc 1 + ;
 
@@ -39,13 +37,51 @@
 	  drop 1 ( a 1 )
 ;
 
+
 : prime?mem 
-	prime?
-	1 allot ( the result's type is bool ) 
-	dup
-	rot
-	swap
-	!	
+	prime?  ( a [is a prime?] )
+	1 allot ( the result's type is bool so it's enough ) 
+	dup     ( a p? addr addr  )
+	rot	( a addr addr p? )
+	swap    ( a addr p?  addr )
+	!	( a addr ) 
+;
+( at first, I thought that it's a good idea to not destroy 
+  the input value. Now I don't think so but let that code
+  be 'called-saved' )
+
+( task #3 )
+( *s1 *s2 - *[s1+s2] )
+: str_cat
+	swap               ( let bottom string be first )
+	double 		   ( addr1 addr2 addr1 addr2 )
+	count swap count   ( addr1 addr2 len2  len1 )
+	swap               ( it's important to save exactly len2 )
+	dup rot +          ( addr1 addr2 len2 [len1+len2] )
+	heap-alloc 	   ( addr1 addr2 len2 addr3 )
+	( str1 copy )
+	rot		   ( addr1 len2 addr3 addr2 )
+	double             ( addr1 len2 addr3 addr2 addr3 addr2 )
+	string-copy        ( addr1 len2 addr3 addr2 )
+	heap-free          ( addr1 len2 addr3 ) ( addr2 is free )
+	( we needed to know len2 to compute shift of the new addres )
+	dup 		   ( addr1 len2 addr3 addr3 )
+	rot 		   ( addr1 addr3 addr3 len2 )
+	+		   ( addr1 addr3 [addr3+len2] )
+	rot		   ( addr3 [addr3+len2] addr1 )
+	dup		   ( addr3 [addr3+len2] addr1 addr1 )
+	rot		   ( addr3 addr1 addr1 [addr3+len2] )
+	swap		   ( addr3 addr1 [addr3+len2] addr1 )
+	string-copy        ( addr3 addr1 )
+	heap-free          ( addr1 is free now )
+	(  addr3 )
+;
+	
+: test_str_cat ." str_cat: " cr
+
+m" hello,"  m"  world!"   str_cat dup prints heap-free cr
+m" 12"      m" 34"        str_cat dup prints heap-free cr
+m" !"	    m" less than sense" 
 ;
 
 : test_prime ." prime: " cr 
@@ -63,5 +99,30 @@
       19 prime?	        . ."  - " . cr
       887 prime?        . ."  - " . cr
 ;
-test_prime
+
+: test_parity ." parity: " cr
+    0       parity_num? . ."  - " . cr drop
+    1       parity_num? . ."  - " . cr drop
+    2	    parity_num? . ."  - " . cr drop   
+   88888888 parity_num? . ."  - " . cr drop  
+   88888887 parity_num? . ."  - " . cr drop 
+   -1       parity_num? . ."  - " . cr drop 
+   -12      parity_num? . ."  - " . cr drop 
+   -13	    parity_num? . ."  - " . cr drop 
+   
+;
+
+: test_Oshepkov_Artem's_P3202_words 
+	." *********" cr
+	." TESTING:"  cr
+	cr
+	test_parity
+	cr
+	test_prime
+	cr
+	test_str_cat
+	cr
+;
+
+
               
