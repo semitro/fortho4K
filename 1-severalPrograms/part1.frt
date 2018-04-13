@@ -76,43 +76,59 @@
 	heap-free          ( addr1 is free now )
 	(  addr3 )
 ;
-	
+
+( ***unit tests*** )
+: tab   ."    " ;
+: test 	tab str_cat dup prints heap-free cr ;
 : test_str_cat ." str_cat: " cr
+	m" hello,"  m"  world!"   test
+	m" 12"      m" 34"        test
 
-m" hello,"  m"  world!"   str_cat dup prints heap-free cr
-m" 12"      m" 34"        str_cat dup prints heap-free cr
-m" !"	    m" less than sense" 
+	m" let's try "
+	m" to build a string "    str_cat
+	m" by three ones!"        test
+
+	m" empty string after:" 
+        m" "                      test
+	
+        m" "
+        m" - empty string before" test
+	m" " m" " test   ( nothing is shown )
 ;
 
+: test prime? tab . ."  - " . cr ;
 : test_prime ." prime: " cr 
-      0 prime?		. ."  - " . cr 
-      1 prime?		. ."  - " . cr 
-      2 prime?          . ."  - " . cr 
-      88888888 prime?   . ."  - " . cr
-      10000391 prime?   . ."  - " . cr 
-      889 prime?        . ."  - " . cr
-      21 prime? 	. ."  - " . cr
-      3 prime?		. ."  - " . cr 
-      7 prime?		. ."  - " . cr  
-      13 prime?         . ."  - " . cr 
-      17 prime?         . ."  - " . cr 
-      19 prime?	        . ."  - " . cr
-      887 prime?        . ."  - " . cr
+      0 	test
+      1 	test
+      2 	test
+      88888888  test   
+      10000391  test
+      889 	test
+      21 	test
+      3 	test
+      7 	test 
+      13 	test 
+      17 	test 
+      19 	test
+      887 	test
+      100393	test
+      10000439  test
 ;
-
+: test parity_num? tab . ."  - " . cr drop ;
 : test_parity ." parity: " cr
-    0       parity_num? . ."  - " . cr drop
-    1       parity_num? . ."  - " . cr drop
-    2	    parity_num? . ."  - " . cr drop   
-   88888888 parity_num? . ."  - " . cr drop  
-   88888887 parity_num? . ."  - " . cr drop 
-   -1       parity_num? . ."  - " . cr drop 
-   -12      parity_num? . ."  - " . cr drop 
-   -13	    parity_num? . ."  - " . cr drop 
+    0       test
+    1       test
+    2	    test  
+   88888888 test 
+   88888887 test 
+   -1       test 
+   -12      test 
+   -13	    test 
    
 ;
 
-: test_Oshepkov_Artem's_P3202_words 
+: test_Oshepkov_Artem's_P3202_words
+	cr 
 	." *********" cr
 	." TESTING:"  cr
 	cr
@@ -122,7 +138,11 @@ m" !"	    m" less than sense"
 	cr
 	test_str_cat
 	cr
+
+	." ********" cr
+	
 ;
 
+test_Oshepkov_Artem's_P3202_words
 
               
