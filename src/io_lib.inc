@@ -1,5 +1,20 @@
-section .text
+; Some usefull utility functions
 
+global string_length
+global print_string
+global print_newline
+global print_char
+global print_int
+global print_uint
+global string_equals
+global read_char
+global read_word
+global parse_uint
+global parse_int
+global exit
+global string_copy
+
+section .text
 
 string_length:
     xor rax, rax
@@ -21,7 +36,7 @@ string_length:
     jmp ._getChars
 ._ret:
     ret
-; Макрсон likely-unlikely unix
+
 ;Args: rdi - pointer of null-terminated string 
 print_string:
     mov rsi, rdi ; buffer pointer
@@ -32,8 +47,6 @@ print_string:
     syscall
     ret
 
-
-section .data
 ;ch_b1: db '1234567890987654321hehehey ', 0
 ;char_buffer:
 ;	db 0,'   ENDENDEND',0,0,0
