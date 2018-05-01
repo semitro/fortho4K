@@ -13,7 +13,9 @@ fetch_word_hdr_addr:
 
 .loop:	
 .check: lea  rsi, [rcx+HDR_SIZE] ; point to string #2
+	push rdi
 	call string_equals
+	pop rdi
 	test rax, rax
 	jz .next_word
 .found:	
@@ -22,7 +24,7 @@ fetch_word_hdr_addr:
 
 .next_word:
 .can_we:
- 	mov rax, [rcx] ; test if next word exists
+ 	lea rax, [rcx] ; test if next word exists
 	test rax, rax
 	jz .notFound
 	mov rcx, [rcx]
