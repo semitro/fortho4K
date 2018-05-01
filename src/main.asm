@@ -1,5 +1,5 @@
 global _start
-
+global next
 
 %include "io_lib.inc"
 %include "fmachine.inc"
@@ -7,6 +7,7 @@ global _start
 section .text
 _start:
 .interp_loop:
+next:
 .read_word:
 	mov rdi, input_buffer 
 	mov rsi, INPUT_BUFFER_SIZE
@@ -17,8 +18,14 @@ _start:
 	call parse_int
 	test rdx, rdx
 	jne .num_recieved
-	jmp .read_word
+	jmp .find_word_in_the_dict
 .num_recieved:
 	mov rdi, rax
+	call print_int
+	jmp .read_word
+.find_word_in_the_dict:
+	mov rdi, input_buffer
+	call fetch_word_hdr_addr
+	mov  rdi, rax
 	call print_int
 	jmp .read_word

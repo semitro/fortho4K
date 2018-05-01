@@ -10,5 +10,7 @@ global input_buffer
 section .bss
 input_buffer: resq INPUT_BUFFER_SIZE
 
+section .data
+%include "words.inc"
 	
 %endif ; FORTH_MACHINE_INC
