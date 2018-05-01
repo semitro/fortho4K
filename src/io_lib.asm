@@ -120,7 +120,7 @@ print_uint:
     pop r12
     ret
 ; rdi - one string pointer
-; rsi - two string pointerв
+; rsi - two string pointer
 string_equals:
 .next_char:
     mov al, byte[rdi]
