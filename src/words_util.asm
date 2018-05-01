@@ -24,7 +24,7 @@ fetch_word_hdr_addr:
 
 .next_word:
 .can_we:
- 	lea rax, [rcx] ; test if next word exists
+ 	mov rax, [rcx] ; test if next word exists
 	test rax, rax
 	jz .notFound
 	mov rcx, [rcx]
