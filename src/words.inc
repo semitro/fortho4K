@@ -23,8 +23,9 @@ native "leave", leave
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native "init", init
-	lea pc, [interp]
+	lea pc, [interp] ; load interpet
 	mov rstack, rstack_buffer
+	mov [inital_rsp], rsp ; let .S works
 	jmp next	
 
 ;;;;;;;MAIN_THING;;;;;;;;;;
@@ -70,7 +71,6 @@ colon "print_no_word", print_no_word
 	dq xt_emit
 	dq xt_get_no_such_word_buffer
 	dq xt_print
-	dq xt_emit
 	dq xt_leave
 
 ;;;;;;;; BRANCHES ;;;;;
@@ -173,9 +173,20 @@ native 'find_word_xt', find_word_xt
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native '.S', show_stack
-	mov rdi, 42
-	call print_char
-;	jmp next
+	mov rax, [inital_rsp]
+	mov rcx, rsp
+.loop:
+	cmp rcx, rax
+	jz next
+	mov rdi, [rcx]
+	add rcx, 8 ; ceil size
+	push rax
+	push rcx
+	call print_int
+	call print_newline
+	pop rcx
+	pop rax
+	jmp .loop
 
 ; it's helpful for debug
 native '42', 42
@@ -221,6 +232,7 @@ native 'swap', swap
 	push rax
 	push rcx
 	jmp next
+
 ;;;;;;;;;;;; ARIFMETIC ;;;;;;;;;;;;;;;
 root_word: dq wh_. ; it's a variable void* 
 			   ; pointing to the head of the list

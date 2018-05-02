@@ -11,9 +11,12 @@
 global input_buffer
 
 section .bss
+
 input_buffer: resq INPUT_BUFFER_SIZE
 resq RETURN_STACK_SIZE ; rstack grows down
 rstack_buffer: resq 1
+inital_rsp: resq 1
+
 section .data
 %include "words.inc"
 	
