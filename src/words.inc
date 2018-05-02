@@ -96,6 +96,7 @@ native "branch", branch
 native 'execute', execute
 	pop rax
 	jmp rax
+
 ; (char* str - )
 ; prints string
 native 'print', print
@@ -150,17 +151,21 @@ native 'find_word_hdr', find_word_hdr
 	pop rdi
 	call fetch_word_hdr_addr
 	push rax
+	jmp next
+
 ; ( char* buff - void* word_exec_code )
 native 'find_word_xt', find_word_xt
 	pop rdi
 	call fetch_word_exec_addr
 	push rax
+	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native '.S', show_stack
 	mov rdi, 42
 	call print_char
 ;	jmp next
+
 ; it's helpful for debug
 native '42', 42
 	mov rdi, 42
