@@ -38,6 +38,7 @@ interp:
 	call print_char
 	call print_char
 
+
 ;;;;;;;; BRANCHES ;;;;;
 ; ( bool tos - )
 ; run next word if tos != 0
@@ -50,6 +51,7 @@ native "run_if", run_if
 	jnz next  ; run  next word
 	add pc, 8 ; skip next word
 	jmp next
+
 ; ( bool value - )
 ; Does branch if tos != 0
 native "branch_if", branch_if
@@ -63,16 +65,10 @@ native "branch_if", branch_if
 ; only in precompile
 native "branch", branch 
 	mov pc, [pc] ; pc = void*. Addr is in the next ceil
-	;jmp pc	
 	jmp next
-; ( bool value - )
-; jmp to label if zero	
-native "branch0", branch0
-	pop rax
-	test rax, rax
-;	jz 
-;	jmp
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; ( char* - )
 ; read a word from stdin and store it into the addr
 native 'read_word', read_word
