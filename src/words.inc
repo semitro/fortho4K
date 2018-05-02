@@ -26,8 +26,6 @@ interp:
 	;push input_buffer
 	dq xt_read_word
 	dq xt_parse_int
-	dq xt_.
-	dq xt_.
 	dq xt_run_if
 		dq xt_read_word
 	dq xt_show_stack
