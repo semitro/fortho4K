@@ -9,12 +9,14 @@ global root_word
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; to enter a colon word
 native "docol", docol
 	rpush pc
 	add w, 8
 	mov pc, w
 	jmp next
 
+; to exit a colon word
 native "leave", leave
 	rpop pc
 	jmp next
@@ -24,7 +26,8 @@ native "init", init
 	lea pc, [interp]
 	mov rstack, rstack_buffer
 	jmp next	
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
 interp:	
 	dq xt_get_input_buffer 
