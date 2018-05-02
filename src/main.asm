@@ -9,9 +9,15 @@ no_such_word_str:
 db "No such word", 10, 0
 
 section .text
-_start:
-.interp_loop:
 next:
+	mov w, pc
+	add pc, 8
+	mov w, [w]
+	jmp [w]
+
+_start:
+	jmp i_init
+.interp_loop:
 .read_word:
 	mov rdi, input_buffer 
 	mov rsi, INPUT_BUFFER_SIZE

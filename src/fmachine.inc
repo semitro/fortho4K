@@ -1,15 +1,19 @@
 %ifndef FORTH_MACHINE_INC
 %define FORTH_MACHINE_INC
 
-%define PC r15
-%define W  r14
+%define pc r15
+%define w  r14
+%define rstack r13
 
 %define INPUT_BUFFER_SIZE 512
+%define RETURN_STACK_SIZE 512
+
 global input_buffer
 
 section .bss
 input_buffer: resq INPUT_BUFFER_SIZE
-
+resq RETURN_STACK_SIZE ; rstack grows down
+rstack_buffer: resq 1
 section .data
 %include "words.inc"
 	
