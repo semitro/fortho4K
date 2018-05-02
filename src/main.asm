@@ -4,6 +4,10 @@ global next
 %include "io_lib.inc"
 %include "fmachine.inc"
 
+section .rodata
+no_such_word_str:
+db "No such word", 10, 0
+
 section .text
 _start:
 .interp_loop:
@@ -25,7 +29,12 @@ next:
 	jmp .read_word
 .find_word_in_the_dict:
 	mov rdi, input_buffer
-	call fetch_word_hdr_addr
-	mov  rdi, rax
-	call print_int
+	call fetch_word_exec_addr
+	test rax, rax
+	jz .no_such_word
+	jmp rax
+	jmp .read_word
+.no_such_word:
+	mov rdi, no_such_word_str
+	call print_string
 	jmp .read_word

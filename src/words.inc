@@ -3,8 +3,10 @@
 %include "macro.inc"
 %include "io_lib.inc"
 
-extern fetch_word_hdr_addr
 global root_word
+
+extern fetch_word_hdr_addr
+extern fetch_word_exec_addr
 
 native '.S', show_stack
 	mov rdi, 42

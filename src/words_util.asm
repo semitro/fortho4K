@@ -1,10 +1,12 @@
 
 global fetch_word_hdr_addr
+global fetch_word_exec_addr
+
 extern root_word
 %include "io_lib.inc"
 
-%define  HDR_SIZE 9
-
+%define  HDR_SIZE  9
+%define  FLAG_SIZE 1
 
 ; rdi - char* name
 ; ret rax: void* hdr_addr
@@ -31,5 +33,26 @@ fetch_word_hdr_addr:
 	jmp .loop
 
 .notFound:
-	xor rax, rax
+	xor rax, rax ; it's not neccessary!!
 	ret	
+; rdi - char* name
+; ret rax: void* instructions
+; ret rax: zero if there's no such word
+fetch_word_exec_addr:
+	call fetch_word_hdr_addr
+	test rax, rax
+	jz .notFound
+.ok:	
+	add rax, HDR_SIZE ; HDR_SIZE - bytes before the string
+	mov rcx, rax ; rcx <- words_name addr
+	mov rdi, rax 
+	push rcx
+	call string_length
+	inc rax ; \0 byte taked into account
+	pop rcx
+	mov rax, [rax + rcx + FLAG_SIZE] ; 
+.found:
+.notFound:
+	ret
+
+
