@@ -233,7 +233,68 @@ native 'swap', swap
 	push rcx
 	jmp next
 
+;;;;;;;;;;;; LOGIC ;;;;;;;;;;;;;;;;;;;
+native 'not', not
+	pop rax
+	test rax, rax
+	jz .1
+	xor rax, rax
+	jmp .outro
+.1:	mov rax, 1
+.outro:	push rax
+	jmp next
+
+native '=', equals
+	pop rax
+	pop rcx
+	cmp rax, rcx
+	je .true
+.false: xor rax, rax
+	jmp .outro
+.true:
+	mov rax, 1
+.outro:	push rax
+	jmp next
+	
 ;;;;;;;;;;;; ARIFMETIC ;;;;;;;;;;;;;;;
-root_word: dq wh_. ; it's a variable void* 
+native '+', plus
+	pop rax
+	pop rcx
+	add rax, rcx
+	push rax
+	jmp next
+
+native '-', sub2
+	pop rcx
+	pop rax
+	sub rax, rcx
+	push rax
+	jmp next
+
+native '*', mul
+	pop rax
+	pop rcx
+	imul rcx
+	push rax
+	jmp next
+
+native '/', div
+	xor edx, edx
+	pop rcx
+	pop rax
+	idiv rcx
+	push rax
+	jmp next
+
+native '%', mod
+	xor edx, edx
+	pop rcx
+	pop rax
+	idiv rcx
+	push rdx
+	jmp next
+
+
+root_word: dq wh_mod ; it's a variable void* 
 			   ; pointing to the head of the list
 %endif ; WORDS_INC
