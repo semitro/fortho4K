@@ -1,7 +1,9 @@
 #the result program
 forto4ka
+
 # editors things
 *.swp
+*.swo
 *~
 # Prerequisites
 *.d
