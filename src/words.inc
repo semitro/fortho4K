@@ -26,22 +26,45 @@ interp:
 	;push input_buffer
 	dq xt_read_word
 	dq xt_parse_int
-	dq xt_run_if
-		dq xt_read_word
-	dq xt_show_stack
+	dq xt_42
+	branch_if .num ; if it's num
+	dq xt_42
+	branch interp
+.num:	
+	dq xt_43
+	dq xt_43
+	branch interp
+	mov rdi, 43
+	call print_char
+	call print_char
+
 ;;;;;;;; BRANCHES ;;;;;
 ; ( bool tos - )
 ; run next word if tos != 0
+; DANGEROUS: DON'T use macro "branch" after!
+; 'cause it stores addr as word after itself 
+
 native "run_if", run_if
 	pop rax
 	test rax, rax
 	jnz next  ; run  next word
 	add pc, 8 ; skip next word
 	jmp next
+; ( bool value - )
+; Does branch if tos != 0
+native "branch_if", branch_if
+	pop rax
+	test rax, rax
+	jnz i_branch
+	add pc, 8 ; skip next addr
+	jmp next
 
 ; jmp to label right after word
-native "branch", branch
-
+; only in precompile
+native "branch", branch 
+	mov pc, [pc] ; pc = void*. Addr is in the next ceil
+	;jmp pc	
+	jmp next
 ; ( bool value - )
 ; jmp to label if zero	
 native "branch0", branch0
@@ -91,6 +114,18 @@ native '.S', show_stack
 	mov rdi, 42
 	call print_char
 ;	jmp next
+; it's helpful for debub
+native '42', 42
+	mov rdi, 42
+	call print_char
+	call print_newline
+	jmp next
+
+native '43', 43
+	mov rdi, 43
+	call print_char
+	call print_newline
+	jmp next
 
 native '.', .
 	pop rdi

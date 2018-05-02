@@ -57,8 +57,8 @@ dq xt_branch
 dq %1
 %endmacro
 
-%macro branch0 1 
-dq xt_branch0
+%macro branch_if 1 
+dq xt_branch_if
 dq %1 
 %endmacro
 

@@ -13,9 +13,12 @@ global parse_uint
 global parse_int
 global exit
 global string_copy
+global get_rip
 
 section .text
-
+get_rip:
+	mov rax, [rsp] ; famous hack to get rip value
+	ret
 string_length:
     xor rax, rax
     mov r10, 0 ; \0 char. This idea's silly. 

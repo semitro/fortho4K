@@ -1,5 +1,7 @@
 %ifndef IO_LIB_INC
 %define IO_LIB_INC
+; actually it's more than IO lib..
+extern get_rip
 extern string_length
 extern print_string
 extern print_newline
