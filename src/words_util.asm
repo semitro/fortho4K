@@ -9,9 +9,11 @@ extern root_word
 %define  FLAG_SIZE 1
 
 ; rdi - char* name
+; rsi - hdr* root_node
 ; ret rax: void* hdr_addr
 fetch_word_hdr_addr:
-.init:	mov rcx, [root_word]     ; rcx - current word's header
+	mov rcx, rsi
+.init:	;mov rcx, [root_word]     ; rcx - current word's header
 
 .loop:	
 .check: lea  rsi, [rcx+HDR_SIZE] ; point to string #2

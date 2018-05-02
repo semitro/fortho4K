@@ -4,7 +4,7 @@
 %include "io_lib.inc"
 %include "fmachine.inc"
 
-global root_word
+%define _IMMEDIATE 0x01
 
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
@@ -21,12 +21,26 @@ native "leave", leave
 	rpop pc
 	jmp next
 
+native "bye", bye
+	call exit
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native "init", init
 	lea pc, [interp] ; load interpet
 	mov rstack, rstack_buffer
 	mov [inital_rsp], rsp ; let .S works
+	mov rax, [default_root]
+	mov [root_word], rax
 	jmp next	
+;;;;;;;;;;; COMPILE ;;;;;;
+native ":", switch_to_compiler
+	mov qword [state], STATE_COMPILER
+	
+native ";", switch_to_enterpr, _IMMEDIATE
+	mov qword [state], STATE_INTERPRET
+
+colon "compiler", compiler
+	
 
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
@@ -141,7 +155,13 @@ native 'read_word', read_word
 	mov rsi, INPUT_BUFFER_SIZE
 	call read_word
 	jmp next
-	
+
+; (char* - )	
+native 'count', count
+	pop rdi
+	call string_length
+	jmp next	
+
 ; ( char* str - n, n.lenght )
 ; ( if it's not a number, n.lenght=0, n itself is undef )	
 native 'parse_int', parse_int
@@ -160,6 +180,7 @@ colon 'is_num', is_num
 ; ( char* buff - void* word_hdr)
 native 'find_word_hdr', find_word_hdr
 	pop rdi
+	mov rsi, [root_word]
 	call fetch_word_hdr_addr
 	push rax
 	jmp next
@@ -167,6 +188,7 @@ native 'find_word_hdr', find_word_hdr
 ; ( char* buff - void* word_exec_code )
 native 'find_word_xt', find_word_xt
 	pop rdi
+	mov rsi, [root_word]
 	call fetch_word_exec_addr
 	push rax
 	jmp next
@@ -207,6 +229,7 @@ native 'lit', lit
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
 
+;;;;;;;; STACK THINGS ;;;;;;;
 native 'dup', dup
 	;push qword[rsp]
 	pop rax
@@ -231,6 +254,15 @@ native 'swap', swap
 	pop rcx
 	push rax
 	push rcx
+	jmp next
+; ( a b c - b c a )
+native 'rot', rot
+	pop rcx
+	pop rdi
+	pop rax
+	push rdi
+	push rcx
+	push rax
 	jmp next
 
 ;;;;;;;;;;;; LOGIC ;;;;;;;;;;;;;;;;;;;
@@ -264,7 +296,7 @@ native '+', plus
 	push rax
 	jmp next
 
-native '-', sub2
+native "-", sub2
 	pop rcx
 	pop rax
 	sub rax, rcx
@@ -294,7 +326,7 @@ native '%', mod
 	push rdx
 	jmp next
 
+default_root:
+	dq wh_mod
 
-root_word: dq wh_mod ; it's a variable void* 
-			   ; pointing to the head of the list
 %endif ; WORDS_INC
