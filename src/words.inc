@@ -30,6 +30,7 @@ native "init", init
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
 interp:	
+	dq xt_print_welcome
 	dq xt_get_input_buffer 
 	dq xt_read_word
 	dq xt_get_input_buffer
@@ -51,6 +52,15 @@ interp:
 .num:	
 	; the number's already on the top of the stack
 	branch interp
+
+colon "print_welcome", print_welcome
+	dq xt_lit
+	dq '>'
+	dq xt_emit
+	dq xt_lit
+	dq ' '
+	dq xt_emit
+	dq xt_leave
 
 colon "print_no_word", print_no_word
 	dq xt_get_input_buffer
@@ -110,6 +120,7 @@ native 'emit', emit
 	pop rdi
 	call print_char
 	jmp next
+
 ; prints \n character
 native 'cr', cr
 	call print_newline
