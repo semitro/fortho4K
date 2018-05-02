@@ -15,6 +15,10 @@ native "docol", docol
 	mov pc, w
 	jmp next
 
+native "leave", leave
+	rpop pc
+	jmp next
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native "init", init
 	lea pc, [interp]
@@ -23,21 +27,38 @@ native "init", init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 colon "interpret", interpret
 interp:	
-	;push input_buffer
+	dq xt_get_input_buffer 
 	dq xt_read_word
+	dq xt_get_input_buffer
 	dq xt_parse_int
-	dq xt_42
 	branch_if .num ; if it's num
-	dq xt_42
+	dq xt_drop ; parse int returns 2 args
+	dq xt_get_input_buffer
+.word:
+	dq xt_find_word_xt ; ( void * code )
+	dq xt_dup ; if there's no such word, tos=0
+	branch_if .word_exists
+.no_word:
+	dq xt_print_no_word	
+	dq xt_drop ; clear 0 code value
 	branch interp
-.num:	
-	dq xt_43
-	dq xt_43
-	branch interp
-	mov rdi, 43
-	call print_char
-	call print_char
 
+.word_exists:
+	dq xt_execute
+.num:	
+	; the number's already on the top of the stack
+	branch interp
+
+colon "print_no_word", print_no_word
+	dq xt_get_input_buffer
+	dq xt_print
+	dq xt_lit
+       	dq ':'
+	dq xt_emit
+	dq xt_get_no_such_word_buffer
+	dq xt_print
+	dq xt_emit
+	dq xt_leave
 
 ;;;;;;;; BRANCHES ;;;;;
 ; ( bool tos - )
@@ -68,11 +89,39 @@ native "branch", branch
 	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ( void* code - )
+native 'execute', execute
+	pop rax
+	jmp rax
+; (char* str - )
+; prints string
+native 'print', print
+	pop rdi
+	call print_string
+	jmp next
+
+; (char c - )
+; prints single character to stdout
+native 'emit', emit
+	pop rdi
+	call print_char
+	jmp next
+; prints \n character
+native 'cr', cr
+	call print_newline
+	jmp next
+
+native 'get_no_such_word_buffer', get_no_such_word_buffer
+	push no_such_word_str
+	jmp next
+
+native 'get_input_buffer', get_input_buffer
+	push input_buffer
+	jmp next
 
 ; ( char* - )
 ; read a word from stdin and store it into the addr
 native 'read_word', read_word
-	push 	input_buffer
 	pop rdi
 	mov rsi, INPUT_BUFFER_SIZE
 	call read_word
@@ -81,7 +130,6 @@ native 'read_word', read_word
 ; ( char* str - n, n.lenght )
 ; ( if it's not a number, n.lenght=0, n itself is undef )	
 native 'parse_int', parse_int
-	push input_buffer ; temporary
 	pop rdi
 	call parse_int
 	push rax ; n
@@ -110,7 +158,7 @@ native '.S', show_stack
 	mov rdi, 42
 	call print_char
 ;	jmp next
-; it's helpful for debub
+; it's helpful for debug
 native '42', 42
 	mov rdi, 42
 	call print_char
@@ -121,6 +169,24 @@ native '43', 43
 	mov rdi, 43
 	call print_char
 	call print_newline
+	jmp next
+
+; push next dq thing onto the stack
+native 'lit', lit
+	push qword[pc] ; push next ceil
+	add pc, 8 ; next ceil's data, not a command
+	jmp next
+
+native 'dup', dup
+	;push qword[rsp]
+	pop rax
+	push rax
+	push rax
+	jmp next
+
+native 'drop', drop
+	pop rax
+;	add rsp, 8
 	jmp next
 
 native '.', .
