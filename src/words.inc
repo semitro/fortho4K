@@ -8,6 +8,7 @@
 
 section .rdata
 colon_word_string: db "docol", 0
+compiler_off_string: db ";", 0
 section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
@@ -50,7 +51,7 @@ colon "test_colon_in_colon", test_colon_in_colon
 	dq xt_43
 	dq xt_leave
 
-;;;;;;;;;;; COMPILE ;;;;;;;;
+;;;;;;;;;;; COMPILE ;;;;;;;;;;
 colon  ":", switch_to_compiler
 	dq xt_switch_state_to_compiler
 	dq xt_print_welcome
@@ -61,11 +62,9 @@ colon  ":", switch_to_compiler
 	dq xt_get_input_buffer
 	dq xt_create_word
 
-;	dq xt_create_word
 	; don't forget about non-existing words in future!
 	
-	dq xt_get_input_buffer
-	dq xt_read_word
+	dq xt_compiler ; compiler loop
 	dq xt_leave
 
 native ":to_compiler", switch_state_to_compiler
@@ -79,14 +78,16 @@ native ":to_interpret", switch_state_to_interpret
 	jmp next
 
 
-; ( char* name )
-; finds word _name_ and pushes it's xt
-; to colon word being built at the moment 
+; pushes xt to colon word being built at the moment 
 ; ( xt = execution token, void* code )
 native ":push_word", push_word
-	pop rdi
-	call fetch_word_exec_addr
-
+	pop rax ; rax = xt
+	mov rdx, [new_root] 
+	mov [rdx], rax
+	add qword [new_root], 8 ; p += sizeof(dq)
+	
+	mov rdi, '!'
+	call print_char
 	jmp next
 
 ; ( char* name )
@@ -127,23 +128,52 @@ native ":create_word", create_word, _IMMEDIATE
 	inc rax ; p++
 	mov [new_root], rax ; update the pointer
 
-.cln:	; next thing is xt_addr
+.coln:	; next thing is xt_addr
 	lea rdi, [colon_word_string]
 	mov rsi, [root_word]
 	call fetch_word_exec_addr
 	mov rdx, [new_root] ; rdx = p
 	mov [rdx], rax ; *p = colon_xt
 	add rdx, 8
-	add [new_root], rdx
+	mov [new_root], rdx ; add or move?
 
 	jmp next
 
 native ";", switch_to_enterpr, _IMMEDIATE
 	mov qword [state], STATE_INTERPRET
+
 	jmp next
 
 colon "compiler", compiler
-	
+compiler:	
+	dq xt_lit, '~', xt_emit
+	dq xt_print_welcome
+	dq xt_get_input_buffer 
+	dq xt_read_word
+	dq xt_get_input_buffer
+	dq xt_parse_int
+	branch_if .num ; if it's num
+	dq xt_drop ; parse int returns 2 args
+	dq xt_get_input_buffer
+.word:
+	dq xt_find_word_xt ; ( void * code )
+	dq xt_dup ; if there's no such word, tos=0
+	branch_if .word_exists
+.no_word:
+	dq xt_print_no_word	
+	dq xt_drop ; clear 0 code value
+	dq xt_43
+	branch compiler
+
+.word_exists:
+	dq xt_get_input_buffer
+	dq xt_get_compiler_off_string
+	dq xt_string_equals
+	dq xt_.
+	dq xt_push_word
+.num:	
+	; the number's already on the top of the stack
+	branch compiler
 
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
@@ -249,9 +279,15 @@ native 'get_no_such_word_buffer', get_no_such_word_buffer
 	push no_such_word_str
 	jmp next
 
+;;;;;;;; HARDCODE ADDRS THINGS ;;;;;
 native 'get_input_buffer', get_input_buffer
 	push input_buffer
 	jmp next
+
+native 'get_compiler_off_string', get_compiler_off_string
+	push compiler_off_string
+	jmp next
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; ( char* - )
 ; read a word from stdin and store it into the addr
@@ -327,6 +363,14 @@ native '43', 43
 	call print_char
 	call print_newline
 	jmp next
+;;;;;;;; MEMORY THINGS ;;;;;;;;
+
+; fetch dq from memory
+; ( addr - value )
+native '@', @
+	pop rax
+	push qword [rax]
+	jmp next
 
 ; push next dq thing onto the stack
 native 'lit', lit
@@ -367,6 +411,14 @@ native 'rot', rot
 	pop rax
 	push rdi
 	push rcx
+	push rax
+	jmp next
+;;;;;;;;;;;; STRINGS ;;;;;;;;;;;;;;;;;
+; ( char* s1, char* s2 - equals? )
+native 'string_equals', string_equals
+	pop rdi
+	pop rsi
+	call string_equals
 	push rax
 	jmp next
 
