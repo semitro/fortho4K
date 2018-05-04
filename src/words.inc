@@ -15,7 +15,6 @@ extern fetch_word_exec_addr
 ; to enter a colon word
 native "docol", docol
 	rpush pc
-	mov rdi, '~'
 	call print_char
 	add w, 8
 	mov pc, w
@@ -169,6 +168,9 @@ interp:
 
 colon "print_welcome", print_welcome
 	dq xt_lit
+	dq '~'
+	dq xt_emit
+	dq xt_lit
 	dq '>'
 	dq xt_emit
 	dq xt_lit
@@ -220,10 +222,6 @@ native 'execute', execute
 	pop rax
 	mov w, rax
 	jmp [rax]
-
-	mov [program_stub], rax
-	mov pc, program_stub
-	jmp next
 
 ; (char* str - )
 ; prints string
