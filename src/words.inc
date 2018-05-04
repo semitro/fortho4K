@@ -137,12 +137,7 @@ colon "compiler", compiler
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
 interp:	
-	dq xt_43	
-	dq xt_get_input_buffer
-	dq xt_read_word
-	dq xt_43
 	dq xt_print_welcome
-	dq xt_43
 	dq xt_get_input_buffer 
 	dq xt_read_word
 	dq xt_get_input_buffer
@@ -166,7 +161,6 @@ interp:
 	branch interp
 
 colon "print_welcome", print_welcome
-	dq xt_42
 	dq xt_lit
 	dq '>'
 	dq xt_emit
