@@ -57,4 +57,9 @@ fetch_word_exec_addr:
 .notFound:
 	ret
 
-
+skip_entire_word:
+	call fetch_word_exec_addr
+	jz .notFound
+.found:	add rax, 9 ; skip FLAG and exec addr
+.notFound:
+	ret

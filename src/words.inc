@@ -6,6 +6,9 @@
 
 %define _IMMEDIATE 0x01
 
+section .rdata
+colon_word_string: db "colon", 0
+section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,12 +35,84 @@ native "init", init
 	mov rax, [default_root]
 	mov [root_word], rax
 	jmp next	
-;;;;;;;;;;; COMPILE ;;;;;;
-native ":", switch_to_compiler
-	mov qword [state], STATE_COMPILER
+
+;;;;;;;;;;; COMPILE ;;;;;;;;
+colon  ":", switch_to_compiler
+	dq xt_switch_state_to_compiler
+	dq xt_lit
+	dq colon_word_string 
+	; don't forget about non-existing words in future!
 	
+native ":to_compiler", switch_state_to_compiler
+	mov qword [state], STATE_COMPILER
+	mov rdx, [root_word]
+	mov [new_root], rdx
+	jmp next
+
+native ":to_interpret", switch_state_to_interpret
+	mov qword [state], STATE_INTERPRET
+	jmp next
+
+
+; ( char* name )
+; finds word _name_ and pushes it's xt
+; to colon word being built at the moment 
+; ( xt = execution token, void* code )
+native ":push_word", push_word
+	pop rdi
+	call fetch_word_exec_addr
+
+; ( char* name )
+; creates name of new word (doesn't check if word exists yet )
+; we will find word by this name in future
+native ":create_word", create_word, _IMMEDIATE
+	
+	; init pointer to previous word
+	mov rdx, [root_word] 
+	mov rax, [new_root] ; rax - byte* 
+	add rax, 8 ; space from previous word (can we decrease?)
+	mov [rax], rdx ; *new_root = root_word
+	add rax, 8 ; dq wh_last_word; p += 8
+
+	; second stroke of the header
+	mov byte [rax], 0 ; db 0
+	inc rax ; p ++
+	mov [new_root], rax ; update the pointer itself
+
+	; init name of the word
+	pop rdi ; str src
+	push rdi ; copy str* on stack
+	mov rsi, [new_root] ; str dst
+	mov rdx, INPUT_BUFFER_SIZE
+	call string_copy
+
+	; probably, there's more sophisticated way to skip the name
+	; but anyway
+	pop rdi
+	call string_length ; skip 'db "str", 0'
+	inc rax ; \0 symbol
+	mov rdx, [new_root] ; rdx = p
+	add rax, rdx ; rax = p + sring_lenght
+	mov [new_root], rax ; update the pointer (can be erased)
+	
+	; skip FLAGS
+	mov byte[rax], 0  ; FLAGS = 0
+	inc rax ; p++
+	mov [new_root], rax ; update the pointer
+
+	; next thing is xt_addr
+	mov rdi, colon_word_string
+	call fetch_word_exec_addr
+	mov rdx, [new_root] ; rdx = p
+	mov [rdx], rax ; *p = colon_xt
+	add rdx, 8
+	add [new_root], rdx
+
+	jmp next
+
 native ";", switch_to_enterpr, _IMMEDIATE
 	mov qword [state], STATE_INTERPRET
+	jmp next
 
 colon "compiler", compiler
 	
