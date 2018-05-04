@@ -169,11 +169,13 @@ compiler:
 	dq xt_get_input_buffer
 	dq xt_get_compiler_off_string
 	dq xt_string_equals
-	dq xt_.
+	branch_if .compiler_off
 	dq xt_push_word
 .num:	
 	; the number's already on the top of the stack
 	branch compiler
+.compiler_off:
+	dq xt_leave
 
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
@@ -378,7 +380,7 @@ native 'lit', lit
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
 
-;;;;;;;; STACK THINGS ;;;;;;;
+;;;;;;;; STACK THINGS ;;;;;;;;;;
 native 'dup', dup
 	;push qword[rsp]
 	pop rax
