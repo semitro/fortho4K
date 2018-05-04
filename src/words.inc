@@ -7,7 +7,7 @@
 %define _IMMEDIATE 0x01
 
 section .rdata
-colon_word_string: db "colon", 0
+colon_word_string: db "docol", 0
 section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
@@ -15,6 +15,7 @@ extern fetch_word_exec_addr
 ; to enter a colon word
 native "docol", docol
 	rpush pc
+	mov rdi, '~'
 	call print_char
 	add w, 8
 	mov pc, w
@@ -51,18 +52,21 @@ colon "test_colon_in_colon", test_colon_in_colon
 
 ;;;;;;;;;;; COMPILE ;;;;;;;;
 colon  ":", switch_to_compiler
-	dq xt_leave
-	dq xt_print_welcome
-	dq xt_get_input_buffer
-	dq xt_read_word
 	dq xt_switch_state_to_compiler
-;	dq xt_lit
-;	dq colon_word_string 
+	dq xt_print_welcome
+
+	dq xt_get_input_buffer ; read name of the new word
+	dq xt_read_word
+	
+	dq xt_get_input_buffer
+	dq xt_create_word
+
 ;	dq xt_create_word
 	; don't forget about non-existing words in future!
 	
 	dq xt_get_input_buffer
 	dq xt_read_word
+	dq xt_leave
 
 native ":to_compiler", switch_state_to_compiler
 	mov qword [state], STATE_COMPILER
@@ -123,8 +127,9 @@ native ":create_word", create_word, _IMMEDIATE
 	inc rax ; p++
 	mov [new_root], rax ; update the pointer
 
-	; next thing is xt_addr
-	mov rdi, colon_word_string
+.cln:	; next thing is xt_addr
+	lea rdi, [colon_word_string]
+	mov rsi, [root_word]
 	call fetch_word_exec_addr
 	mov rdx, [new_root] ; rdx = p
 	mov [rdx], rax ; *p = colon_xt
@@ -167,9 +172,6 @@ interp:
 	branch interp
 
 colon "print_welcome", print_welcome
-	dq xt_lit
-	dq '~'
-	dq xt_emit
 	dq xt_lit
 	dq '>'
 	dq xt_emit
@@ -222,6 +224,7 @@ native 'execute', execute
 	pop rax
 	mov w, rax
 	jmp [rax]
+	jmp next
 
 ; (char* str - )
 ; prints string

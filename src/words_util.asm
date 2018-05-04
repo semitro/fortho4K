@@ -38,6 +38,7 @@ fetch_word_hdr_addr:
 	xor rax, rax ; it's not neccessary!!
 	ret	
 ; rdi - char* name
+; rsi - hdr* root_node
 ; ret rax: void* instructions
 ; ret rax: zero if there's no such word
 fetch_word_exec_addr:
