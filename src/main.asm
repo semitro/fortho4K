@@ -10,9 +10,9 @@ db "No such word", 10, 0
 
 section .text
 next:
-	mov w, pc  ; word that is going to be executed
+	mov w, [pc]  ; word that is going to be executed
 	add pc, 8  ; pc  -> next word
-	mov w, [w] ; w    = &xt_impl 
+;	mov w, [w] ; w    = &xt_impl 
 	jmp [w]    ; rip -> xt_impl
 
 _start:

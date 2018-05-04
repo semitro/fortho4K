@@ -29,20 +29,35 @@ native "bye", bye
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native "init", init
-	lea pc, [interp] ; load interpet
+;	lea pc, [interp] ; load interpet
+;	lea pc, [interp+8]
+	lea pc, [interp]
 	mov rstack, rstack_buffer
 	mov [inital_rsp], rsp ; let .S works
 	mov rax, [default_root]
 	mov [root_word], rax
 	jmp next	
+;;
+colon "test_colon", test_colon
+	dq xt_42
+	dq xt_43
+	dq xt_leave
 
 ;;;;;;;;;;; COMPILE ;;;;;;;;
 colon  ":", switch_to_compiler
+	dq xt_leave
+	dq xt_print_welcome
+	dq xt_get_input_buffer
+	dq xt_read_word
 	dq xt_switch_state_to_compiler
-	dq xt_lit
-	dq colon_word_string 
+;	dq xt_lit
+;	dq colon_word_string 
+;	dq xt_create_word
 	; don't forget about non-existing words in future!
 	
+	dq xt_get_input_buffer
+	dq xt_read_word
+
 native ":to_compiler", switch_state_to_compiler
 	mov qword [state], STATE_COMPILER
 	mov rdx, [root_word]
@@ -61,6 +76,8 @@ native ":to_interpret", switch_state_to_interpret
 native ":push_word", push_word
 	pop rdi
 	call fetch_word_exec_addr
+
+	jmp next
 
 ; ( char* name )
 ; creates name of new word (doesn't check if word exists yet )
@@ -120,7 +137,12 @@ colon "compiler", compiler
 ;;;;;;;MAIN_THING;;;;;;;;;;
 colon "interpret", interpret
 interp:	
+	dq xt_43	
+	dq xt_get_input_buffer
+	dq xt_read_word
+	dq xt_43
 	dq xt_print_welcome
+	dq xt_43
 	dq xt_get_input_buffer 
 	dq xt_read_word
 	dq xt_get_input_buffer
@@ -144,6 +166,7 @@ interp:
 	branch interp
 
 colon "print_welcome", print_welcome
+	dq xt_42
 	dq xt_lit
 	dq '>'
 	dq xt_emit
@@ -190,11 +213,21 @@ native "branch", branch
 	mov pc, [pc] ; pc = void*. Addr is in the next ceil
 	jmp next
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ( void* code - )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ( void* xt - )
 native 'execute', execute
 	pop rax
-	jmp rax
+	jmp [rax]
+;	
+	mov rdx, rax
+	add rdx, 8
+	mov [program_stub], pc
+;	mov pc, program_stub
+;	add pc, 8
+	jmp next
+
+	;pop rax
+	;jmp rax
 
 ; (char* str - )
 ; prints string

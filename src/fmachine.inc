@@ -24,6 +24,7 @@ inital_rsp: resq 1
 state: resq 1 ; compiler or interpret
 root_word: resq 1 ; root word addr
 new_root:  resq 1 ; helps us to add new word
+program_stub: resq 1;
 
 section .data
 %include "words.inc"

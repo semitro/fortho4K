@@ -52,7 +52,7 @@ fetch_word_exec_addr:
 	call string_length
 	inc rax ; \0 byte taked into account
 	pop rcx
-	mov rax, [rax + rcx + FLAG_SIZE] ; 
+	lea rax, [rax + rcx + FLAG_SIZE] ; 
 .found:
 .notFound:
 	ret
