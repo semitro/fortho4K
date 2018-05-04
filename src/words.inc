@@ -15,6 +15,8 @@ extern fetch_word_exec_addr
 ; to enter a colon word
 native "docol", docol
 	rpush pc
+	mov rdi, '~'
+	call print_char
 	add w, 8
 	mov pc, w
 	jmp next
@@ -40,6 +42,11 @@ native "init", init
 ;;
 colon "test_colon", test_colon
 	dq xt_42
+	dq xt_43
+	dq xt_leave
+
+colon "test_colon_in_colon", test_colon_in_colon
+	dq xt_test_colon
 	dq xt_43
 	dq xt_leave
 
@@ -211,17 +218,12 @@ native "branch", branch
 ; ( void* xt - )
 native 'execute', execute
 	pop rax
+	mov w, rax
 	jmp [rax]
-;	
-	mov rdx, rax
-	add rdx, 8
-	mov [program_stub], pc
-;	mov pc, program_stub
-;	add pc, 8
-	jmp next
 
-	;pop rax
-	;jmp rax
+	mov [program_stub], rax
+	mov pc, program_stub
+	jmp next
 
 ; (char* str - )
 ; prints string
