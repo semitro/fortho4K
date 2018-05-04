@@ -82,9 +82,9 @@ native ":to_interpret", switch_state_to_interpret
 ; ( xt = execution token, void* code )
 native ":push_word", push_word
 	pop rax ; rax = xt
+	add qword [new_root], 8 ; p += sizeof(dq)
 	mov rdx, [new_root] 
 	mov [rdx], rax
-	add qword [new_root], 8 ; p += sizeof(dq)
 	
 	mov rdi, '!'
 	call print_char
@@ -134,14 +134,15 @@ native ":create_word", create_word, _IMMEDIATE
 	call fetch_word_exec_addr
 	mov rdx, [new_root] ; rdx = p
 	mov [rdx], rax ; *p = colon_xt
-	add rdx, 8
+	; don't skip extra space
 	mov [new_root], rdx ; add or move?
 
 	jmp next
 
+;; stop compile	
 native ";", switch_to_enterpr, _IMMEDIATE
-	mov qword [state], STATE_INTERPRET
-
+	mov rax, [new_root]
+	mov [root_word], rax
 	jmp next
 
 colon "compiler", compiler
@@ -175,6 +176,7 @@ compiler:
 	; the number's already on the top of the stack
 	branch compiler
 .compiler_off:
+	dq xt_switch_to_enterpr
 	dq xt_leave
 
 ;;;;;;;MAIN_THING;;;;;;;;;;
