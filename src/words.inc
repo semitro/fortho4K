@@ -319,6 +319,7 @@ native 'parse_int', parse_int
 colon 'is_num', is_num
 	dq xt_parse_int
 	dq xt_swap
+	dq xt_leave
 	;dq xt_pop
 
 
@@ -457,7 +458,7 @@ native '+', plus
 	push rax
 	jmp next
 
-native "-", sub2
+native '-', sub2
 	pop rcx
 	pop rax
 	sub rax, rcx
