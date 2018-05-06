@@ -23,7 +23,9 @@ inital_rsp: resq 1
 
 state: resq 1 ; compiler or interpret
 root_word: resq 1 ; root word addr
-new_root:  resq 1 ; helps us to add new word
+building_word_addr:  resq 1 ; last addr of the new word
+new_root: resq 1  ; new root is the pointer to the header of the new word
+
 program_stub: resq 1;
 
 section .data

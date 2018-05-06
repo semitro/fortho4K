@@ -57,7 +57,8 @@ fetch_word_exec_addr:
 .found:
 .notFound:
 	ret
-
+; rdi - char * name
+; rsi - hdr * root_node
 skip_entire_word:
 	call fetch_word_exec_addr
 	jz .notFound

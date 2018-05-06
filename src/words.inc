@@ -70,7 +70,7 @@ colon  ":", switch_to_compiler
 native ":to_compiler", switch_state_to_compiler
 	mov qword [state], STATE_COMPILER
 	mov rdx, [root_word]
-	mov [new_root], rdx
+	mov [building_word_addr], rdx
 	jmp next
 
 native ":to_interpret", switch_state_to_interpret
@@ -82,8 +82,8 @@ native ":to_interpret", switch_state_to_interpret
 ; ( xt = execution token, void* code )
 native ":push_word", push_word
 	pop rax ; rax = xt
-	add qword [new_root], 8 ; p += sizeof(dq)
-	mov rdx, [new_root] 
+	add qword [building_word_addr], 8 ; p += sizeof(dq)
+	mov rdx, [building_word_addr] 
 	mov [rdx], rax
 	
 	mov rdi, '!'
@@ -97,20 +97,23 @@ native ":create_word", create_word, _IMMEDIATE
 	
 	; init pointer to previous word
 	mov rdx, [root_word] 
-	mov rax, [new_root] ; rax - byte* 
+	mov rax, [building_word_addr] ; rax - byte* 
 	add rax, 8 ; space from previous word (can we decrease?)
-	mov [rax], rdx ; *new_root = root_word
+	
+	mov [new_root], rax ; new_root->new_word hdr
+	
+	mov [rax], rdx ; *building_word_addr = root_word
 	add rax, 8 ; dq wh_last_word; p += 8
 
 	; second stroke of the header
 	mov byte [rax], 0 ; db 0
 	inc rax ; p ++
-	mov [new_root], rax ; update the pointer itself
+	mov [building_word_addr], rax ; update the pointer itself
 
 	; init name of the word
 	pop rdi ; str src
 	push rdi ; copy str* on stack
-	mov rsi, [new_root] ; str dst
+	mov rsi, [building_word_addr] ; str dst
 	mov rdx, INPUT_BUFFER_SIZE
 	call string_copy
 
@@ -119,23 +122,23 @@ native ":create_word", create_word, _IMMEDIATE
 	pop rdi
 	call string_length ; skip 'db "str", 0'
 	inc rax ; \0 symbol
-	mov rdx, [new_root] ; rdx = p
+	mov rdx, [building_word_addr] ; rdx = p
 	add rax, rdx ; rax = p + sring_lenght
-	mov [new_root], rax ; update the pointer (can be erased)
+	mov [building_word_addr], rax ; update the pointer (can be erased)
 	
 	; skip FLAGS
 	mov byte[rax], 0  ; FLAGS = 0
 	inc rax ; p++
-	mov [new_root], rax ; update the pointer
+	mov [building_word_addr], rax ; update the pointer
 
 .coln:	; next thing is xt_addr
 	lea rdi, [colon_word_string]
 	mov rsi, [root_word]
 	call fetch_word_exec_addr
-	mov rdx, [new_root] ; rdx = p
+	mov rdx, [building_word_addr] ; rdx = p
 	mov [rdx], rax ; *p = colon_xt
 	; don't skip extra space
-	mov [new_root], rdx ; add or move?
+	mov [building_word_addr], rdx ; add or move?
 
 	jmp next
 
@@ -320,7 +323,6 @@ colon 'is_num', is_num
 	dq xt_parse_int
 	dq xt_swap
 	dq xt_leave
-	;dq xt_pop
 
 
 ; ( char* buff - void* word_hdr)
