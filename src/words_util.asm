@@ -1,12 +1,37 @@
 
 global fetch_word_hdr_addr
 global fetch_word_exec_addr
+global for_each_word
 
 extern root_word
 %include "io_lib.inc"
 
 %define  HDR_SIZE  9
 %define  FLAG_SIZE 1
+
+; rdi - function (rdi* str)
+; rsi - hdr* root_node
+for_each_word:
+	mov rcx, rsi
+.loop:
+	lea rsi, [rcx + HDR_SIZE]
+	push rcx
+	push rdi
+	mov rax, rdi
+	mov rdi, rsi
+	call rax
+	pop rdi
+	pop rcx
+
+.to_next:
+.if_we_can:
+	mov rax, [rcx] ; have we got the next word?
+	test rax, rax
+	jz .end
+	mov rcx, [rcx]
+	jmp .loop
+.end:
+	ret
 
 ; rdi - char* name
 ; rsi - hdr* root_node

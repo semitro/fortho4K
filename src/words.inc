@@ -12,6 +12,7 @@ compiler_off_string: db ";", 0
 section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
+extern for_each_word
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; to enter a colon word
 native "docol", docol
@@ -53,7 +54,7 @@ colon "test_colon_in_colon", test_colon_in_colon
 
 ;;;;;;;;;;; COMPILE ;;;;;;;;;;
 colon  ":", switch_to_compiler
-	dq xt_switch_state_to_compiler
+	dq xt_to_compiler
 	dq xt_print_welcome
 
 	dq xt_get_input_buffer ; read name of the new word
@@ -67,14 +68,10 @@ colon  ":", switch_to_compiler
 	dq xt_compiler ; compiler loop
 	dq xt_leave
 
-native ":to_compiler", switch_state_to_compiler
+native ":to_compiler", to_compiler
 	mov qword [state], STATE_COMPILER
-	mov rdx, [root_word]
+	mov rdx, [root_word] 
 	mov [building_word_addr], rdx
-	jmp next
-
-native ":to_interpret", switch_state_to_interpret
-	mov qword [state], STATE_INTERPRET
 	jmp next
 
 
@@ -96,7 +93,8 @@ native ":push_word", push_word
 native ":create_word", create_word, _IMMEDIATE
 	
 	; init pointer to previous word
-	mov rdx, [root_word] 
+	mov rdx, [root_word]
+	; building word address has been already initialized
 	mov rax, [building_word_addr] ; rax - byte* 
 	add rax, 8 ; space from previous word (can we decrease?)
 	
@@ -226,6 +224,17 @@ colon "print_no_word", print_no_word
 	dq xt_get_no_such_word_buffer
 	dq xt_print
 	dq xt_leave
+
+print_word:
+	call print_string
+	call print_newline
+	ret
+
+native "ls", list_all_words
+	lea rdi, [print_word]
+	mov rsi, [root_word]
+	call for_each_word
+	jmp next
 
 ;;;;;;;; BRANCHES ;;;;;
 ; ( bool tos - )
