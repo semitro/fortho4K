@@ -7,7 +7,6 @@
 %define _IMMEDIATE 0x01
 
 section .rdata
-colon_word_string: db "docol", 0
 compiler_off_string: db ";", 0
 section .data
 extern fetch_word_hdr_addr
@@ -35,8 +34,6 @@ native "bye", bye
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native "init", init
-;	lea pc, [interp] ; load interpet
-;	lea pc, [interp+8]
 	lea pc, [interp]
 	mov rstack, rstack_buffer
 	mov [inital_rsp], rsp ; let .S works
@@ -132,15 +129,11 @@ native ":create_word", create_word, _IMMEDIATE
 	mov [building_word_addr], rax ; update the pointer
 
 .coln:	; next thing is xt_addr
-	lea rdi, [colon_word_string]
-	mov rsi, [root_word]
-	call fetch_word_exec_addr ; get word "colon"'s xt
 	mov rdx, [building_word_addr] ; rdx = p
 	; first thing is dq i_docol! Not xt_docol
-	mov rax, [rax]
-	mov [rdx], rax ; *p = dq i_docol
+	mov qword[rdx], i_docol ; *p = dq i_docol
 	; don't skip extra space
-	mov [building_word_addr], rdx ; add or move?
+	mov [building_word_addr], rdx
 
 	jmp next
 
@@ -151,6 +144,7 @@ native ";", switch_to_enterpr, _IMMEDIATE
 	mov rax, [building_word_addr]
 	add rax, 8 ; last dq is 8 byte 
 	mov qword [rax], xt_leave	
+.update_root:
 	mov rax, [new_root]
 	mov [root_word], rax
 	jmp next
