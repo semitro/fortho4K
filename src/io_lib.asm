@@ -248,7 +248,6 @@ parse_int:
         inc rdi        ; negative number
 	call parse_uint
  	neg rax
-	inc rdx
 	ret
 
 exit:

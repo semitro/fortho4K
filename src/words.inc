@@ -53,7 +53,7 @@ colon "test_colon_in_colon", test_colon_in_colon
 	dq xt_43
 	dq xt_leave
 
-;;;;;;;;;;; COMPILE THINGS ;;;;;;;;;;
+;;;;;;;;;;; COMPILE THINGS ;;;;;;;;;;;;;
 colon  ":", switch_to_compiler
 	dq xt_to_compiler
 	dq xt_print_welcome
@@ -63,8 +63,6 @@ colon  ":", switch_to_compiler
 	
 	dq xt_get_input_buffer
 	dq xt_create_word
-
-	; don't forget about non-existing words in future!
 	dq xt_compiler ; compiler loop
 	dq xt_leave
 
@@ -105,7 +103,7 @@ native ":create_word", create_word, _IMMEDIATE
 	mov [building_word_addr], rax ; update the pointer itself
 
 	; init name of the word
-	pop rdi ; str src
+	pop rdi  ; str src
 	push rdi ; copy str* on stack
 	mov rsi, [building_word_addr] ; str dst
 	mov rdx, INPUT_BUFFER_SIZE    ; max size restriction
@@ -134,7 +132,7 @@ native ":create_word", create_word, _IMMEDIATE
 
 	jmp next
 
-;;;;;;;;;;;; stop compiling
+;;;;;;;;;;; stop compiling ;;;
 native ";", switch_to_enterpr, _IMMEDIATE
 .xt_leave_word:
 	mov rax, [building_word_addr]
@@ -167,7 +165,6 @@ compiler:
 .no_word:
 	dq xt_print_no_word	
 	dq xt_drop ; clear 0 code value
-	dq xt_43
 	branch compiler
 
 .word_exists:
@@ -205,6 +202,7 @@ interp:
 .word_exists:
 	dq xt_execute
 .num:	
+	dq xt_43
 	; the number's already on the top of the stack
 	branch interp
 
@@ -334,7 +332,6 @@ colon 'is_num', is_num
 	dq xt_parse_int
 	dq xt_swap
 	dq xt_leave
-
 
 ; ( char* buff - void* word_hdr)
 native 'find_word_hdr', find_word_hdr
