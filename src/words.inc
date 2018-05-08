@@ -12,13 +12,12 @@ section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
 extern for_each_word
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; to enter a colon word
 native "docol", docol
 	rpush pc
 	mov rdi, '~'
-	call print_char
-	mov rdi, '!'
 	call print_char
 	add w, 8
 	mov pc, w
@@ -40,7 +39,8 @@ native "init", init
 	mov rax, [default_root]
 	mov [root_word], rax
 	jmp next	
-;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 colon "test_colon", test_colon
 	dq xt_42
 	dq xt_43
@@ -51,7 +51,7 @@ colon "test_colon_in_colon", test_colon_in_colon
 	dq xt_43
 	dq xt_leave
 
-;;;;;;;;;;; COMPILE ;;;;;;;;;;
+;;;;;;;;;;; COMPILE THINGS ;;;;;;;;;;
 colon  ":", switch_to_compiler
 	dq xt_to_compiler
 	dq xt_print_welcome
@@ -63,7 +63,6 @@ colon  ":", switch_to_compiler
 	dq xt_create_word
 
 	; don't forget about non-existing words in future!
-	
 	dq xt_compiler ; compiler loop
 	dq xt_leave
 
@@ -73,7 +72,6 @@ native ":to_compiler", to_compiler
 	mov [building_word_addr], rdx
 	jmp next
 
-
 ; pushes xt to colon word being built at the moment 
 ; ( xt = execution token, void* code )
 native ":push_word", push_word
@@ -81,14 +79,12 @@ native ":push_word", push_word
 	add qword [building_word_addr], 8 ; p += sizeof(dq)
 	mov rdx, [building_word_addr] 
 	mov [rdx], rax
-	
-	mov rdi, '!'
-	call print_char
 	jmp next
 
 ; ( char* name )
 ; creates name of new word (doesn't check if word exists yet )
 ; we will find word by this name in future
+; it creates just a header of the colon word being created
 native ":create_word", create_word, _IMMEDIATE
 	
 	; building word address has been already initialized
@@ -137,9 +133,8 @@ native ":create_word", create_word, _IMMEDIATE
 
 	jmp next
 
-;; stop compile	
+;;;;;;;;;;;; stop compiling
 native ";", switch_to_enterpr, _IMMEDIATE
-
 .xt_leave_word:
 	mov rax, [building_word_addr]
 	add rax, 8 ; last dq is 8 byte 
@@ -149,6 +144,9 @@ native ";", switch_to_enterpr, _IMMEDIATE
 	mov [root_word], rax
 	jmp next
 
+;;;;;;;;;;; COMPILER LOOP ;;;;;;;;;;
+;; compiler and interpeter loops are organazied
+;; separatly because I think it's more clear
 colon "compiler", compiler
 compiler:	
 	dq xt_lit, '~', xt_emit
@@ -202,13 +200,13 @@ interp:
 	dq xt_print_no_word	
 	dq xt_drop ; clear 0 code value
 	branch interp
-
 .word_exists:
 	dq xt_execute
 .num:	
 	; the number's already on the top of the stack
 	branch interp
 
+;;;;;;;;THINGS PRINTING THINGS;;;;;;;;;;;;;;;
 colon "print_welcome", print_welcome
 	dq xt_lit
 	dq '>'
@@ -239,12 +237,11 @@ native "ls", list_all_words
 	call for_each_word
 	jmp next
 
-;;;;;;;; BRANCHES ;;;;;
+;;;;;;;; BRANCHES ;;;;;;;;;
 ; ( bool tos - )
 ; run next word if tos != 0
 ; DANGEROUS: DON'T use macro "branch" after!
 ; 'cause it stores addr as word after itself 
-
 native "run_if", run_if
 	pop rax
 	test rax, rax
@@ -382,6 +379,7 @@ native '43', 43
 	call print_char
 	call print_newline
 	jmp next
+
 ;;;;;;;; MEMORY THINGS ;;;;;;;;
 
 ; fetch dq from memory

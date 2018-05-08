@@ -7,7 +7,8 @@
 
 %define INPUT_BUFFER_SIZE 512
 %define RETURN_STACK_SIZE 512
-
+; It's not used in this implementation of Forth
+; but it's still here because it migth be usefull in the future
 %define STATE_COMPILER 	0x1
 %define STATE_INTERPRET 0x0
 
@@ -21,12 +22,13 @@ resq RETURN_STACK_SIZE ; rstack grows down
 rstack_buffer: resq 1
 inital_rsp: resq 1
 
+; it's written but not actually used
 state: resq 1 ; compiler or interpret
+
 root_word: resq 1 ; root word addr
 building_word_addr:  resq 1 ; last addr of the new word
 new_root: resq 1  ; new root is the pointer to the header of the new word
 
-program_stub: resq 1;
 
 section .data
 %include "words.inc"
