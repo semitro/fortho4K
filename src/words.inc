@@ -19,6 +19,8 @@ native "docol", docol
 	rpush pc
 	mov rdi, '~'
 	call print_char
+	mov rdi, '!'
+	call print_char
 	add w, 8
 	mov pc, w
 	jmp next
@@ -92,49 +94,51 @@ native ":push_word", push_word
 ; we will find word by this name in future
 native ":create_word", create_word, _IMMEDIATE
 	
-	; init pointer to previous word
-	mov rdx, [root_word]
 	; building word address has been already initialized
-	mov rax, [building_word_addr] ; rax - byte* 
-	add rax, 8 ; space from previous word (can we decrease?)
+	mov rax, [building_word_addr] ; rax - byte* = &last_word_hdr
+	add rax, 188 ; space from previous word (can we decrease?)
 	
 	mov [new_root], rax ; new_root->new_word hdr
 	
+	; init pointer to previous word
+	mov rdx, [root_word]
 	mov [rax], rdx ; *building_word_addr = root_word
-	add rax, 8 ; dq wh_last_word; p += 8
+	add rax, 8 ; dq wh_last_word; p += 8; p = new_hdr+8
 
 	; second stroke of the header
 	mov byte [rax], 0 ; db 0
-	inc rax ; p ++
+	inc rax ; p ++; p = new_hdr+9
 	mov [building_word_addr], rax ; update the pointer itself
 
 	; init name of the word
 	pop rdi ; str src
 	push rdi ; copy str* on stack
 	mov rsi, [building_word_addr] ; str dst
-	mov rdx, INPUT_BUFFER_SIZE
+	mov rdx, INPUT_BUFFER_SIZE    ; max size restriction
 	call string_copy
 
 	; probably, there's more sophisticated way to skip the name
-	; but anyway
+	; that we have just initialized but anyway
 	pop rdi
 	call string_length ; skip 'db "str", 0'
 	inc rax ; \0 symbol
 	mov rdx, [building_word_addr] ; rdx = p
-	add rax, rdx ; rax = p + sring_lenght
+	add rax, rdx ; rax = p + sring_length  = hdr + 9 + len + 1
 	mov [building_word_addr], rax ; update the pointer (can be erased)
 	
 	; skip FLAGS
+	inc rax ; p++; p = hdr + 9 + len+1 +1
 	mov byte[rax], 0  ; FLAGS = 0
-	inc rax ; p++
 	mov [building_word_addr], rax ; update the pointer
 
 .coln:	; next thing is xt_addr
 	lea rdi, [colon_word_string]
 	mov rsi, [root_word]
-	call fetch_word_exec_addr
+	call fetch_word_exec_addr ; get word "colon"'s xt
 	mov rdx, [building_word_addr] ; rdx = p
-	mov [rdx], rax ; *p = colon_xt
+	; first thing is dq i_docol! Not xt_docol
+	mov rax, [rax]
+	mov [rdx], rax ; *p = dq i_docol
 	; don't skip extra space
 	mov [building_word_addr], rdx ; add or move?
 
