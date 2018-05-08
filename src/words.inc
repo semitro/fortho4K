@@ -399,15 +399,11 @@ native 'lit', lit
 
 ;;;;;;;; STACK THINGS ;;;;;;;;;;
 native 'dup', dup
-	;push qword[rsp]
-	pop rax
-	push rax
-	push rax
+	push qword[rsp]
 	jmp next
 
 native 'drop', drop
-	pop rax
-;	add rsp, 8
+	add rsp, 8
 	jmp next
 
 native '.', .
@@ -472,7 +468,7 @@ native '+', plus
 	push rax
 	jmp next
 
-native '-', sub2
+native '-', substract
 	pop rcx
 	pop rax
 	sub rax, rcx
