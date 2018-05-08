@@ -7,6 +7,8 @@
 
 %define INPUT_BUFFER_SIZE 512
 %define RETURN_STACK_SIZE 512
+
+%define NEW_WORDS_MEMORY_SIZE 65536
 ; It's not used in this implementation of Forth
 ; but it's still here because it migth be usefull in the future
 %define STATE_COMPILER 	0x1
@@ -27,9 +29,9 @@ state: resq 1 ; compiler or interpret
 
 root_word: resq 1 ; root word addr
 building_word_addr:  resq 1 ; last addr of the new word
-new_root: resq 1  ; new root is the pointer to the header of the new word
-
-
+new_root: resq 1  ; It's a  pointer to the header of the new word
+last_command_in_new_word: resq 1 ; it's a pointer to the end of the new word.
+; it's easier and cheaper to remember than to compute
 section .data
 %include "words.inc"
 	

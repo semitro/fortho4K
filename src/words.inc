@@ -38,6 +38,8 @@ native "init", init
 	mov [inital_rsp], rsp ; let .S works
 	mov rax, [default_root]
 	mov [root_word], rax
+
+	mov qword [last_command_in_new_word], new_words_creating_here
 	jmp next	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,7 +70,8 @@ colon  ":", switch_to_compiler
 
 native ":to_compiler", to_compiler
 	mov qword [state], STATE_COMPILER
-	mov rdx, [root_word] 
+	mov rdx, [last_command_in_new_word] 
+	add rdx, 8 ; We don't want to rewrite the last command!
 	mov [building_word_addr], rdx
 	jmp next
 
@@ -89,9 +92,7 @@ native ":create_word", create_word, _IMMEDIATE
 	
 	; building word address has been already initialized
 	mov rax, [building_word_addr] ; rax - byte* = &last_word_hdr
-	add rax, 188 ; space from previous word (can we decrease?)
-	
-	mov [new_root], rax ; new_root->new_word hdr
+	mov qword[new_root], rax ; new_root->new_word hdr
 	
 	; init pointer to previous word
 	mov rdx, [root_word]
@@ -138,7 +139,8 @@ native ";", switch_to_enterpr, _IMMEDIATE
 .xt_leave_word:
 	mov rax, [building_word_addr]
 	add rax, 8 ; last dq is 8 byte 
-	mov qword [rax], xt_leave	
+	mov qword [rax], xt_leave
+	mov [last_command_in_new_word], rax
 .update_root:
 	mov rax, [new_root]
 	mov [root_word], rax
@@ -500,7 +502,8 @@ native '%', mod
 	push rdx
 	jmp next
 
-default_root:
-	dq wh_mod
+default_root: dq wh_mod
+section .bss
+new_words_creating_here: resb NEW_WORDS_MEMORY_SIZE
 
 %endif ; WORDS_INC
