@@ -146,6 +146,11 @@ native ":create_word", create_word, _IMMEDIATE
 
 ;; stop compile	
 native ";", switch_to_enterpr, _IMMEDIATE
+
+.xt_leave_word:
+	mov rax, [building_word_addr]
+	add rax, 8 ; last dq is 8 byte 
+	mov qword [rax], xt_leave	
 	mov rax, [new_root]
 	mov [root_word], rax
 	jmp next
