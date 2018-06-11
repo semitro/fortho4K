@@ -75,7 +75,7 @@ native ":to_compiler", to_compiler
 	jmp next
 
 ; pushes xt to colon word being built at the moment 
-; ( xt = execution token, void* code )
+; ( xt, void* code )
 native ":push_word", push_word
 	pop rax ; rax = xt
 	add qword [building_word_addr], 8 ; p += sizeof(dq)
@@ -175,8 +175,11 @@ compiler:
 	dq xt_push_word
 .num:	
 	; the numb's already on the TOS
-	; but it won't work in compiler:
-	; we need to put the number every invoking
+	dq xt_push_next_word_xt
+	dq xt_42
+	dq xt_lit
+	dq 42
+	dq xt_show_stack
 	branch compiler
 .compiler_off:
 	dq xt_drop ; remove excess 6293463 thing from the stack
@@ -251,6 +254,7 @@ native "run_if", run_if
 	add pc, 8 ; skip next word
 	jmp next
 
+
 ; ( bool value - )
 ; Does branch if tos != 0
 native "branch_if", branch_if
@@ -304,6 +308,16 @@ native 'get_input_buffer', get_input_buffer
 
 native 'get_compiler_off_string', get_compiler_off_string
 	push compiler_off_string
+	jmp next
+
+native 'push_previous_word_xt', push_previous_word_xt
+	lea rax, [pc-8]
+	push rax
+	jmp next
+
+native 'push_next_word_xt', push_next_word_xt
+	mov rax, [pc]
+	push rax
 	jmp next
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -396,7 +410,7 @@ native 'lit', lit
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
 
-;;;;;;;; COMPABILITY  ;;;;;;;;;;
+;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
 colon "'", give_me_xt_of_the_next_word
 	dq xt_get_input_buffer
 	dq xt_read_word
@@ -452,7 +466,7 @@ native '<', less
 	jle .more
 	push 1
 	jmp next
-.more
+.more:
 	push 0
 	jmp next
 
