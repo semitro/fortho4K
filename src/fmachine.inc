@@ -19,8 +19,8 @@ global input_buffer
 section .bss
 
 input_buffer: resq INPUT_BUFFER_SIZE
-resq RETURN_STACK_SIZE ; rstack grows down
 
+resq RETURN_STACK_SIZE ; rstack grows down
 rstack_buffer: resq 1
 inital_rsp: resq 1
 
@@ -32,7 +32,6 @@ building_word_addr:  resq 1 ; last addr of the new word
 new_root: resq 1  ; It's a  pointer to the header of the new word
 last_command_in_new_word: resq 1 ; it's a pointer to the end of the new word.
 ; it's easier and cheaper to remember than to compute
-section .data
 %include "words.inc"
 	
 %endif ; FORTH_MACHINE_INC

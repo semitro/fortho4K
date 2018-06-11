@@ -1,4 +1,3 @@
-
 global fetch_word_hdr_addr
 global fetch_word_exec_addr
 global for_each_word
@@ -62,6 +61,7 @@ fetch_word_hdr_addr:
 .notFound:
 	xor rax, rax ; it's not neccessary!!
 	ret	
+
 ; rdi - char* name
 ; rsi - hdr* root_node
 ; ret rax: void* instructions

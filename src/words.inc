@@ -1,5 +1,6 @@
 %ifndef WORDS_INC
 %define WORDS_INC
+
 %include "macro.inc"
 %include "io_lib.inc"
 %include "fmachine.inc"
@@ -129,7 +130,6 @@ native ":create_word", create_word, _IMMEDIATE
 	mov qword[rdx], i_docol ; *p = dq i_docol
 	; don't skip extra space
 	mov [building_word_addr], rdx
-
 	jmp next
 
 ;;;;;;;;;;; stop compiling ;;;
@@ -146,9 +146,9 @@ native ";", switch_to_enterpr, _IMMEDIATE
 
 ;;;;;;;;;;; COMPILER LOOP ;;;;;;;;;;
 ;; compiler and interpeter loops are organazied
-;; separatly because I think it's more clear
+;; separately because I think it's more clear
 colon "compiler", compiler
-compiler:	
+compiler:
 	dq xt_lit, '~', xt_emit
 	dq xt_print_welcome
 	dq xt_get_input_buffer 
@@ -174,9 +174,12 @@ compiler:
 	branch_if .compiler_off
 	dq xt_push_word
 .num:	
-	; the number's already on the top of the stack
+	; the numb's already on the TOS
+	; but it won't work in compiler:
+	; we need to put the number every invoking
 	branch compiler
 .compiler_off:
+	dq xt_drop ; remove excess 6293463 thing from the stack
 	dq xt_switch_to_enterpr
 	dq xt_leave
 
@@ -202,7 +205,6 @@ interp:
 .word_exists:
 	dq xt_execute
 .num:	
-	dq xt_43
 	; the number's already on the top of the stack
 	branch interp
 
@@ -456,6 +458,13 @@ native '=', equals
 	mov rax, 1
 .outro:	push rax
 	jmp next
+; ( a,b - a & b )
+native 'and', byte_and
+	pop rax
+	pop rdx
+	and rax, rdx
+	push rax
+nativ
 	
 ;;;;;;;;;;;; ARIFMETIC ;;;;;;;;;;;;;;;
 native '+', plus
