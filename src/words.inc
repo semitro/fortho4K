@@ -396,6 +396,14 @@ native 'lit', lit
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
 
+;;;;;;;; COMPABILITY  ;;;;;;;;;;
+colon "'", give_me_xt_of_the_next_word
+	dq xt_get_input_buffer
+	dq xt_read_word
+	dq xt_get_input_buffer
+	dq xt_find_word_xt
+	dq xt_leave
+
 ;;;;;;;; STACK THINGS ;;;;;;;;;;
 native 'dup', dup
 	push qword[rsp]
@@ -437,6 +445,17 @@ native 'string_equals', string_equals
 	jmp next
 
 ;;;;;;;;;;;; LOGIC ;;;;;;;;;;;;;;;;;;;
+native '<', less
+	pop rax
+	pop rdx
+	cmp rax, rdx
+	jle .more
+	push 1
+	jmp next
+.more
+	push 0
+	jmp next
+
 native 'not', not
 	pop rax
 	test rax, rax
@@ -459,13 +478,20 @@ native '=', equals
 .outro:	push rax
 	jmp next
 ; ( a,b - a & b )
-native 'and', byte_and
+native 'land', logical_and
 	pop rax
 	pop rdx
 	and rax, rdx
 	push rax
-nativ
-	
+	jmp next
+
+native 'lor', logical_or
+	pop rax
+	pop rdx
+	or rax, rdx
+	push rax
+	jmp next
+
 ;;;;;;;;;;;; ARIFMETIC ;;;;;;;;;;;;;;;
 native '+', plus
 	pop rax
