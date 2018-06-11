@@ -12,6 +12,7 @@ compiler_off_string: db ";", 0
 section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
+extern take_xt_by_hdr
 extern for_each_word
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -362,6 +363,7 @@ native 'find_word_hdr', find_word_hdr
 	push rax
 	jmp next
 
+; THE SAME AS WORD BELOW
 ; ( char* buff - void* word_exec_code )
 native 'find_word_xt', find_word_xt
 	pop rdi
@@ -414,6 +416,12 @@ native 'lit', lit
 	push qword[pc] ; push next ceil
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
+; pusher a header of the last word
+
+native 'last_word', last_word
+	mov rax, [root_word]
+	push rax
+	jmp next
 
 ;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
 colon "'", give_me_xt_of_the_next_word
@@ -422,6 +430,14 @@ colon "'", give_me_xt_of_the_next_word
 	dq xt_get_input_buffer
 	dq xt_find_word_xt
 	dq xt_leave
+
+; convert header to xt
+; (hdr* - xt )
+native 'cfa', cfa
+	pop rdi
+	call take_xt_by_hdr
+	push rax
+	jmp next
 
 ;;;;;;;; STACK THINGS ;;;;;;;;;;
 native 'dup', dup
@@ -454,6 +470,7 @@ native 'rot', rot
 	push rcx
 	push rax
 	jmp next
+
 ;;;;;;;;;;;; STRINGS ;;;;;;;;;;;;;;;;;
 ; ( char* s1, char* s2 - equals? )
 native 'string_equals', string_equals

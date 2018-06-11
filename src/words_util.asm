@@ -1,8 +1,10 @@
 global fetch_word_hdr_addr
 global fetch_word_exec_addr
+global take_xt_by_hdr
 global for_each_word
 
 extern root_word
+
 %include "io_lib.inc"
 
 %define  HDR_SIZE  9
@@ -69,8 +71,10 @@ fetch_word_hdr_addr:
 fetch_word_exec_addr:
 	call fetch_word_hdr_addr
 	test rax, rax
-	jz .notFound
+	jnz skip_hdr
+	ret
 .ok:	
+skip_hdr:
 	add rax, HDR_SIZE ; HDR_SIZE - bytes before the string
 	mov rcx, rax ; rcx <- words_name addr
 	mov rdi, rax 
@@ -80,8 +84,16 @@ fetch_word_exec_addr:
 	pop rcx
 	lea rax, [rax + rcx + FLAG_SIZE] ; 
 .found:
-.notFound:
 	ret
+
+; take the exec addr knowing hdr addr
+; rdi - hdr*
+; rax: void* xt
+take_xt_by_hdr:
+	mov rax, rdi
+	jmp skip_hdr
+	; let fetch_word_exec_addr function work
+
 ; rdi - char * name
 ; rsi - hdr * root_node
 skip_entire_word:
