@@ -75,13 +75,18 @@ native ":to_compiler", to_compiler
 	jmp next
 
 ; pushes xt to colon word being built at the moment 
-; ( xt, void* code )
+; ( xt )
 native ":push_word", push_word
 	pop rax ; rax = xt
 	add qword [building_word_addr], 8 ; p += sizeof(dq)
 	mov rdx, [building_word_addr] 
 	mov [rdx], rax
 	jmp next
+
+; pushes tos to the end of the word being constructed
+; ( value )
+; help us to use lit word and place number after it as dq thing
+; acually it's completely the same as push_word, so there's no anything
 
 ; ( char* name )
 ; creates name of new word (doesn't check if word exists yet )
@@ -173,13 +178,17 @@ compiler:
 	dq xt_string_equals
 	branch_if .compiler_off
 	dq xt_push_word
+	branch compiler
 .num:	
 	; the numb's already on the TOS
 	dq xt_push_next_word_xt
-	dq xt_42
 	dq xt_lit
-	dq 42
-	dq xt_show_stack
+	dq 42 ; it'll be skipped!
+	dq xt_drop ; remove 42 from the stack
+	dq xt_push_word ; push lit_word
+	dq xt_push_word ; push number as word
+			; the numer will be dq thing
+			; placed right after lit to let it work
 	branch compiler
 .compiler_off:
 	dq xt_drop ; remove excess 6293463 thing from the stack
@@ -310,11 +319,7 @@ native 'get_compiler_off_string', get_compiler_off_string
 	push compiler_off_string
 	jmp next
 
-native 'push_previous_word_xt', push_previous_word_xt
-	lea rax, [pc-8]
-	push rax
-	jmp next
-
+; pushes the xt of the next dq thing onto the stack
 native 'push_next_word_xt', push_next_word_xt
 	mov rax, [pc]
 	push rax
