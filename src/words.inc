@@ -411,6 +411,30 @@ native '@', @
 	push qword [rax]
 	jmp next
 
+; fetch byte from memory
+; ( addr - byte )
+native 'c@', c@
+	pop rdi
+	xor rax, rax
+	mov al, byte[rdi]
+	push rax
+	jmp next
+
+; store dq value by addres
+; ( value, addr -- )
+native '!', store_dq
+	pop rax
+	pop rdi
+	mov [rax], rdi
+	jmp next
+
+; store byte value by addres
+; ( byte, addr -- )
+native 'c!', store_byte
+	pop rax
+	pop rdi
+	mov [rax], byte dil
+
 ; push next dq thing onto the stack
 native 'lit', lit
 	push qword[pc] ; push next ceil
@@ -461,6 +485,7 @@ native 'swap', swap
 	push rax
 	push rcx
 	jmp next
+
 ; ( a b c - b c a )
 native 'rot', rot
 	pop rcx
@@ -520,7 +545,7 @@ native 'land', logical_and
 	and rax, rdx
 	push rax
 	jmp next
-
+native 'or', bit_bor
 native 'lor', logical_or
 	pop rax
 	pop rdx
