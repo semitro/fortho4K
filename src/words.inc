@@ -366,6 +366,14 @@ native 'read_word', read_word
 	call read_word
 	jmp next
 
+; (char* -- )
+; read a char and store it
+native 'readc@', readc@
+	call read_char
+	pop rdi
+	mov byte[rdi], al
+	jmp next
+
 ; (char* - )	
 native 'count', count
 	pop rdi
@@ -486,16 +494,48 @@ native 'r>', r_from
 	push rax
 	jmp next
 
+native 'r@', r_fetch
+	push qword [rstack]
+	jmp next
+
+; take the address of the end of the heap''
+native 'dp', heap_end
+	mov rax, dp
+	push rax
+	jmp next
+
+; push input buffer addres
+native 'inbuf', inbuf
+	mov rax, input_buffer
+	push rax
+	jmp next
+	
 ; push next dq thing onto the stack
 native 'lit', lit
 	push qword[pc] ; push next ceil
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
 	
-; pushes a header of the last word
+; pushes an adrres of an adress of the header of the last word
 native 'last_word', last_word
 	mov rax, root_word
+	; As for me, it better to use mov rax, [root_word] instead
+	; but it worsk such way to be compatibility with the teacher's stdlib.frt
 	push rax
+	jmp next
+
+; points to the last word currently being defined 
+native 'here', here, _IMMEDIATE
+	mov rax, [building_word_addr] ; test me!!
+	push rax
+	jmp next
+
+; add x to the word-ceil currently being built 
+; ( x -- )
+native ',', comma
+	mov rax, [building_word_addr]
+	pop qword[rax]
+	add qword[building_word_addr], 8
 	jmp next
 
 ;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
@@ -589,6 +629,8 @@ native '=', equals
 	mov rax, 1
 .outro:	push rax
 	jmp next
+
+native 'and', bit_and
 ; ( a,b - a & b )
 native 'land', logical_and
 	pop rax
