@@ -258,7 +258,17 @@ colon "print_no_word", print_no_word
 	dq xt_leave
 
 print_word:
+	push rdi ; store str*
 	call print_string
+	mov rdi, ' '
+	call print_char
+	pop rdi ; restore str*
+	call string_length
+	add rdi, rax ; check if word is immediate
+	inc rdi
+	mov rdi, [rdi]
+	add rdi, '0'
+	call print_char
 	call print_newline
 	ret
 
@@ -401,7 +411,7 @@ native 'is_word_immediate', is_immediate
 	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-native '.S', show_stack, _IMMEDIATE
+native '.S', show_stack
 	mov rax, [inital_rsp]
 	mov rcx, rsp
 .loop:
@@ -462,6 +472,7 @@ native 'c!', store_byte
 	pop rax
 	pop rdi
 	mov [rax], byte dil
+	jmp next
 
 ; from data stack into return stack
 native '>r', r_to 
@@ -480,10 +491,10 @@ native 'lit', lit
 	push qword[pc] ; push next ceil
 	add pc, 8 ; next ceil's data, not a command
 	jmp next
-; pusher a header of the last word
-
+	
+; pushes a header of the last word
 native 'last_word', last_word
-	mov rax, [root_word]
+	mov rax, root_word
 	push rax
 	jmp next
 

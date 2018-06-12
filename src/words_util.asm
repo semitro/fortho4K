@@ -20,7 +20,7 @@ for_each_word:
 	push rcx
 	push rdi
 	mov rax, rdi
-	mov rdi, rsi
+	mov rdi, rsi ; rdi* string
 	call rax
 	pop rdi
 	pop rcx
