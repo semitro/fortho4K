@@ -183,11 +183,18 @@ compiler:
 
 	dq xt_dup ; duplicate hdr*
 	
-.isImmediate?:
+.is_immediate?:
 	dq xt_is_immediate
-	dq xt_.
+	branch_if .perform_immediate
+
+.push_new_word:
 	dq xt_cfa ; get word's xt: ( hdr, xt )
 	dq xt_push_word
+	branch compiler
+
+.perform_immediate:
+	dq xt_cfa
+	dq xt_execute
 	branch compiler
 .num:	
 	; the numb's already on the TOS
@@ -394,7 +401,7 @@ native 'is_word_immediate', is_immediate
 	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-native '.S', show_stack
+native '.S', show_stack, _IMMEDIATE
 	mov rax, [inital_rsp]
 	mov rcx, rsp
 .loop:
@@ -411,7 +418,7 @@ native '.S', show_stack
 	jmp .loop
 
 ; it's helpful for debug
-native '42', 42
+native '42', 42, 
 	mov rdi, 42
 	call print_char
 	call print_newline
