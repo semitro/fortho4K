@@ -20,8 +20,8 @@ extern for_each_word
 ; to enter a colon word
 native "docol", docol
 	rpush pc
-	mov rdi, '~'
-	call print_char
+	;mov rdi, '~'
+;	call print_char
 	add w, 8
 	mov pc, w
 	jmp next
@@ -84,11 +84,22 @@ native ":push_word", push_word
 	mov rdx, [building_word_addr] 
 	mov [rdx], rax
 	jmp next
+
+magic:
+	mov rdi, 42
+	call print_char
+	jmp magic
+
+native "wand", gmmd, _IMMEDIATE
+	mov rax, magic
+	push rax
+	jmp next
+
 ; if value is on the tos during compile-time
 ; but we want it to be there on each invoking of the function
 ; this word will help us:
 ; ( value -- ) - lit value
-colon "pull_tos_to_literal", pull_tos_to_literal
+colon "pull_tos_with_literal", pull_tos_with_literal
 	dq xt_push_next_word_xt
 	dq xt_lit
 	dq 42 ; it'll be skipped!
@@ -212,7 +223,7 @@ compiler:
 	branch compiler
 .num:	
 	; the numb's already on the TOS
-	dq xt_pull_tos_to_literal
+	dq xt_pull_tos_with_literal
 	branch compiler
 .compiler_off:
 	dq xt_drop ; remove excess 6293463 thing from the stack
@@ -269,10 +280,20 @@ print_word:
 	call print_string
 	mov rdi, ' '
 	call print_char
-	pop rdi ; restore str*
+
+
+	pop rdi
 	call string_length
 	add rdi, rax ; check if word is immediate
 	inc rdi
+	
+	push rdi
+	inc rdi
+	call print_uint
+	mov rdi, ' '
+	call print_char
+	pop rdi
+
 	mov rdi, [rdi]
 	add rdi, '0'
 	call print_char
@@ -306,6 +327,20 @@ native "branch_if", branch_if
 	jnz i_branch
 	add pc, 8 ; skip next addr
 	jmp next
+
+native "go_to_tos", go_to_tos
+	pop rax
+	jmp rax
+
+native "go_to_tos_if", go_to_tos_if
+	pop rax
+	pop rdx
+	test rdx, rdx
+	jnz .go
+.no:
+	jmp next
+.go:
+	jmp rax
 
 colon "0branch", zero_branch
 	dq xt_not
@@ -537,13 +572,17 @@ native 'here', here
 	push rax
 	jmp next
 
-; add x to the word-ceil currently being built 
+; add x to the word-ceil currentl being built 
 ; ( x -- )
-native ',', comma 
-	mov rax, [building_word_addr]
-	pop qword[rax]
-	add qword[building_word_addr], 8
-	jmp next
+colon ',', comma
+	dq xt_push_word
+	dq xt_leave
+
+;native ',', comma 
+;	add qword[building_word_addr], 8
+;	mov rax, [building_word_addr]
+;	pop qword[rax]
+;	jmp next
 
 ;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
 colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
@@ -553,10 +592,14 @@ colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
 	dq xt_find_word_xt
 	dq xt_leave
 
-colon "'to_lit", _IMMEDIATE
+; read a word in compile and place its xt here
+colon "'to_lit", next_and_to_lit, _IMMEDIATE
 	dq xt_give_me_xt_of_the_next_word
-	dq xt_pull_tos_to_literal
+	dq xt_pull_tos_with_literal
 	dq xt_leave
+
+native 'nop', nothing
+	jmp next
 
 ; convert header to xt
 ; ( hdr* - xt )
