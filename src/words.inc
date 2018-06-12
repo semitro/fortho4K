@@ -149,7 +149,7 @@ native ";", switch_to_enterpr, _IMMEDIATE
 .update_root:
 	mov rax, [new_root]
 	mov [root_word], rax
-	jmp next
+	jmp [xt_leave]
 
 ;;;;;;;;;;; COMPILER LOOP ;;;;;;;;;;
 ;; compiler and interpeter loops are organazied
@@ -169,17 +169,17 @@ compiler:
 	dq xt_find_word_hdr ; ( hdr )
 	dq xt_dup
 	branch_if .word_exists
-	; old dq xt_find_word_xt ; ( void * code )
+
 .no_word:
 	dq xt_print_no_word	
 	dq xt_drop ; clear word hdr*
 	branch compiler
 
 .word_exists:
-	dq xt_get_input_buffer
-	dq xt_get_compiler_off_string
-	dq xt_string_equals
-	branch_if .compiler_off
+	;dq xt_get_input_buffer
+	;dq xt_get_compiler_off_string
+	;dq xt_string_equals
+	;branch_if .compiler_off
 
 	dq xt_dup ; duplicate hdr*
 	
