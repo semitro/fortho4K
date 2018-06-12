@@ -13,6 +13,7 @@ section .data
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
 extern take_xt_by_hdr
+extern take_word_flag
 extern for_each_word
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,12 +166,13 @@ compiler:
 	dq xt_drop ; parse int returns 2 args
 	dq xt_get_input_buffer
 .word:
-	dq xt_find_word_xt ; ( void * code )
-	dq xt_dup ; if there's no such word, tos=0
+	dq xt_find_word_hdr ; ( hdr )
+	dq xt_dup
 	branch_if .word_exists
+	; old dq xt_find_word_xt ; ( void * code )
 .no_word:
 	dq xt_print_no_word	
-	dq xt_drop ; clear 0 code value
+	dq xt_drop ; clear word hdr*
 	branch compiler
 
 .word_exists:
@@ -178,6 +180,13 @@ compiler:
 	dq xt_get_compiler_off_string
 	dq xt_string_equals
 	branch_if .compiler_off
+
+	dq xt_dup ; duplicate hdr*
+	
+.isImmediate?:
+	dq xt_is_immediate
+	dq xt_.
+	dq xt_cfa ; get word's xt: ( hdr, xt )
 	dq xt_push_word
 	branch compiler
 .num:	
@@ -273,6 +282,11 @@ native "branch_if", branch_if
 	jnz i_branch
 	add pc, 8 ; skip next addr
 	jmp next
+
+colon "0branch", zero_branch
+	dq xt_not
+	dq xt_branch_if
+	dq xt_leave
 
 ; jmp to label right after word
 ; only in precompile
@@ -372,6 +386,13 @@ native 'find_word_xt', find_word_xt
 	push rax
 	jmp next
 
+; ( word hdr - immediate?: boolean ) 
+native 'is_word_immediate', is_immediate
+	pop rdi
+	call take_word_flag
+	push rax
+	jmp next
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 native '.S', show_stack
 	mov rax, [inital_rsp]
@@ -435,6 +456,18 @@ native 'c!', store_byte
 	pop rdi
 	mov [rax], byte dil
 
+; from data stack into return stack
+native '>r', r_to 
+	pop rax
+	rpush rax
+	jmp next
+
+; from return stack into data stack
+native 'r>', r_from
+	rpop rax
+	push rax
+	jmp next
+
 ; push next dq thing onto the stack
 native 'lit', lit
 	push qword[pc] ; push next ceil
@@ -456,7 +489,7 @@ colon "'", give_me_xt_of_the_next_word
 	dq xt_leave
 
 ; convert header to xt
-; (hdr* - xt )
+; ( hdr* - xt )
 native 'cfa', cfa
 	pop rdi
 	call take_xt_by_hdr

@@ -1,6 +1,7 @@
 global fetch_word_hdr_addr
 global fetch_word_exec_addr
 global take_xt_by_hdr
+global take_word_flag
 global for_each_word
 
 extern root_word
@@ -39,8 +40,6 @@ for_each_word:
 ; ret rax: void* hdr_addr
 fetch_word_hdr_addr:
 	mov rcx, rsi
-.init:	;mov rcx, [root_word]     ; rcx - current word's header
-
 .loop:	
 .check: lea  rsi, [rcx+HDR_SIZE] ; point to string #2
 	push rdi
@@ -61,7 +60,7 @@ fetch_word_hdr_addr:
 	jmp .loop
 
 .notFound:
-	xor rax, rax ; it's not neccessary!!
+	xor rax, rax ; it's not neccessary!
 	ret	
 
 ; rdi - char* name
@@ -93,6 +92,15 @@ take_xt_by_hdr:
 	mov rax, rdi
 	jmp skip_hdr
 	; let fetch_word_exec_addr function work
+
+; rdi - hdr*
+take_word_flag:
+	call take_xt_by_hdr
+	mov rdx, rax
+	dec rdx
+	xor rax, rax
+	mov al, byte[rdx]
+	ret
 
 ; rdi - char * name
 ; rsi - hdr * root_node
