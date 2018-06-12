@@ -45,9 +45,10 @@ words! : for nop repeat ' branch pull pull ;
 : pull , ; IMMEDIATE
 : readc inbuf readc@ inbuf c@ ;
 : repeat here ; IMMEDIATE
-: until 'to_xt ' go_to_tos_if , , ; IMMEDIATE
-: ( repeat readc 41 - not until ; IMMEDIATE
-works : ( nop repeat readc 41 - ' branch_if pull pull ; IMMEDIATE
+: until 'to_lit branch_if , , ; IMMEDIATE
+: ( nop repeat readc 41 - until ; IMMEDIATE
+
+: ( nop repeat readc 41 - ' branch_if pull pull ; IMMEDIATE
 
 : for ' wand pull go_to_tos ;
 
