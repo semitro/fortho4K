@@ -84,6 +84,20 @@ native ":push_word", push_word
 	mov rdx, [building_word_addr] 
 	mov [rdx], rax
 	jmp next
+; if value is on the tos during compile-time
+; but we want it to be there on each invoking of the function
+; this word will help us:
+; ( value -- ) - lit value
+colon "pull_tos_to_literal", pull_tos_to_literal
+	dq xt_push_next_word_xt
+	dq xt_lit
+	dq 42 ; it'll be skipped!
+	dq xt_drop ; remove 42 from the stack
+	dq xt_push_word ; push lit_word
+	dq xt_push_word ; push number as word
+			; the numer will be dq thing
+			; placed right after lit to let it work
+	dq xt_leave
 
 ; pushes tos to the end of the word being constructed
 ; ( value )
@@ -198,14 +212,7 @@ compiler:
 	branch compiler
 .num:	
 	; the numb's already on the TOS
-	dq xt_push_next_word_xt
-	dq xt_lit
-	dq 42 ; it'll be skipped!
-	dq xt_drop ; remove 42 from the stack
-	dq xt_push_word ; push lit_word
-	dq xt_push_word ; push number as word
-			; the numer will be dq thing
-			; placed right after lit to let it work
+	dq xt_pull_tos_to_literal
 	branch compiler
 .compiler_off:
 	dq xt_drop ; remove excess 6293463 thing from the stack
@@ -419,7 +426,7 @@ native 'is_word_immediate', is_immediate
 	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-native '.S', show_stack
+native '.S', show_stack, _IMMEDIATE
 	mov rax, [inital_rsp]
 	mov rcx, rsp
 .loop:
@@ -525,25 +532,30 @@ native 'last_word', last_word
 	jmp next
 
 ; points to the last word currently being defined 
-native 'here', here, _IMMEDIATE
+native 'here', here
 	mov rax, [building_word_addr] ; test me!!
 	push rax
 	jmp next
 
 ; add x to the word-ceil currently being built 
 ; ( x -- )
-native ',', comma
+native ',', comma 
 	mov rax, [building_word_addr]
 	pop qword[rax]
 	add qword[building_word_addr], 8
 	jmp next
 
 ;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
-colon "'", give_me_xt_of_the_next_word
+colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
 	dq xt_get_input_buffer
 	dq xt_read_word
 	dq xt_get_input_buffer
 	dq xt_find_word_xt
+	dq xt_leave
+
+colon "'to_lit", _IMMEDIATE
+	dq xt_give_me_xt_of_the_next_word
+	dq xt_pull_tos_to_literal
 	dq xt_leave
 
 ; convert header to xt
