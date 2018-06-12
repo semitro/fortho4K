@@ -226,7 +226,7 @@ parse_uint:
 .is_a_numeral:   
     cmp sil, 0x30 ; We're checking if the current char in set of 0..9 
     js	.not_a_number ; Above ['0'
-    cmp sil, 0x39 
+    cmp sil, 0x3A 
     jns .not_a_number ; Beneath '9']
 .yes:
     mul r10 ; We're going to use a formula rax*10 + number

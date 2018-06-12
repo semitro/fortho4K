@@ -26,18 +26,33 @@
 : endif 'to_lit then execute ; IMMEDIATE
 
 ( MY )
+
+: <> = not ;
+: <= 2dup < -rot =  lor ;
+: > <= not ;
+: >= < not ; 
+
+: -rot swap >r swap  r> ;
+
 : IMMEDIATE  last_word @ cfa 1 - dup c@ 1 or swap c! ;
 : pull , ; IMMEDIATE
 : readc inbuf readc@ inbuf c@ ;
 
-: repeat here ; IMMEDIATE
+: repeat here 8 + ; IMMEDIATE
 : until 'to_lit branch_if , , ; IMMEDIATE
 
-: ( nop repeat readc 41 - until ; IMMEDIATE
+: ( repeat readc 41 - until ; IMMEDIATE
 
 
-: if 'to_lit not , 'to_lit branch_if , 0 , here   ; IMMEDIATE
+: if 'to_lit not , 'to_lit branch_if , 0 , here  ; IMMEDIATE
+
+: else 'to_lit branch , here 8 + 0 , swap here 8 + swap !  ; IMMEDIATE
 : then here 8 + swap ! ; IMMEDIATE
+
+: test 1 if 4 else 3 then ;
+: test 0 if 3 else 4 then ;
+
+
 ( : then nop nop nop nop ' then0 pull ; IMMEDIATE )
 
 : test 1 if drop drop drop then ;

@@ -600,6 +600,10 @@ colon "'to_lit", next_and_to_lit, _IMMEDIATE
 
 native 'nop', nothing
 	jmp next
+	
+native 'exit', exit
+	rpop pc
+	jmp next
 
 ; convert header to xt
 ; ( hdr* - xt )
