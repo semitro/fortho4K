@@ -578,12 +578,6 @@ colon ',', comma
 	dq xt_push_word
 	dq xt_leave
 
-;native ',', comma 
-;	add qword[building_word_addr], 8
-;	mov rax, [building_word_addr]
-;	pop qword[rax]
-;	jmp next
-
 ;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
 colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
 	dq xt_get_input_buffer
@@ -600,7 +594,8 @@ colon "'to_lit", next_and_to_lit, _IMMEDIATE
 
 native 'nop', nothing
 	jmp next
-	
+
+
 native 'exit', exit
 	rpop pc
 	jmp next
