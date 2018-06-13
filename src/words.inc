@@ -7,9 +7,8 @@
 
 %define _IMMEDIATE 0x01
 
-section .rdata
-compiler_off_string: db ";", 0
 section .data
+
 extern fetch_word_hdr_addr
 extern fetch_word_exec_addr
 extern take_xt_by_hdr
@@ -34,27 +33,15 @@ native "leave", leave
 native "bye", bye
 	call exit
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;INIT;;;;;;;;;;;;;;;;;
 native "init", init
 	lea pc, [interp]
 	mov rstack, rstack_buffer
 	mov [inital_rsp], rsp ; let .S works
 	mov rax, [default_root]
 	mov [root_word], rax
-
 	mov qword [last_command_in_new_word], new_words_creating_here
 	jmp next	
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-colon "test_colon", test_colon
-	dq xt_42
-	dq xt_43
-	dq xt_leave
-
-colon "test_colon_in_colon", test_colon_in_colon
-	dq xt_test_colon
-	dq xt_43
-	dq xt_leave
 
 ;;;;;;;;;;; COMPILE THINGS ;;;;;;;;;;;;;
 colon  ":", switch_to_compiler
@@ -85,16 +72,6 @@ native ":push_word", push_word
 	mov [rdx], rax
 	jmp next
 
-magic:
-	mov rdi, 42
-	call print_char
-	jmp magic
-
-native "wand", gmmd, _IMMEDIATE
-	mov rax, magic
-	push rax
-	jmp next
-
 ; if value is on the tos during compile-time
 ; but we want it to be there on each invoking of the function
 ; this word will help us:
@@ -109,11 +86,6 @@ colon "pull_tos_with_literal", pull_tos_with_literal
 			; the numer will be dq thing
 			; placed right after lit to let it work
 	dq xt_leave
-
-; pushes tos to the end of the word being constructed
-; ( value )
-; help us to use lit word and place number after it as dq thing
-; acually it's completely the same as push_word, so there's no anything
 
 ; ( char* name )
 ; creates name of new word (doesn't check if word exists yet )
@@ -164,7 +136,7 @@ native ":create_word", create_word, _IMMEDIATE
 	mov [building_word_addr], rdx
 	jmp next
 
-;;;;;;;;;;; stop compiling ;;;
+;;;;;;;;;;; stop compiling ;;;;;;;;;;;;;;
 native ";", switch_to_enterpr, _IMMEDIATE
 .xt_leave_word:
 	mov rax, [building_word_addr]
@@ -176,9 +148,9 @@ native ";", switch_to_enterpr, _IMMEDIATE
 	mov [root_word], rax
 	jmp [xt_leave]
 
-;;;;;;;;;;; COMPILER LOOP ;;;;;;;;;;
+;;;;;;;;;;; COMPILER LOOP ;;;;;;;;;;;;;;;;;;;;;
 ;; compiler and interpeter loops are organazied
-;; separately because I think it's more clear
+;; separately because I think it's more finicky
 colon "compiler", compiler
 compiler:
 	dq xt_lit, '~', xt_emit
@@ -201,11 +173,6 @@ compiler:
 	branch compiler
 
 .word_exists:
-	;dq xt_get_input_buffer
-	;dq xt_get_compiler_off_string
-	;dq xt_string_equals
-	;branch_if .compiler_off
-
 	dq xt_dup ; duplicate hdr*
 	
 .is_immediate?:
@@ -230,7 +197,7 @@ compiler:
 	dq xt_switch_to_enterpr
 	dq xt_leave
 
-;;;;;;;MAIN_THING;;;;;;;;;;
+;;;;;;;;;; MAIN_THING ;;;;;;;;;;
 colon "interpret", interpret
 interp:	
 	dq xt_print_welcome
@@ -255,7 +222,7 @@ interp:
 	; the number's already on the top of the stack
 	branch interp
 
-;;;;;;;;THINGS PRINTING THINGS;;;;;;;;;;;;;;;
+;;;;;;;;;;; THINGS PRINTING THINGS;;;;;;;;;;;;;;;
 colon "print_welcome", print_welcome
 	dq xt_lit
 	dq '>'
@@ -268,9 +235,7 @@ colon "print_welcome", print_welcome
 colon "print_no_word", print_no_word
 	dq xt_get_input_buffer
 	dq xt_print
-	dq xt_lit
-       	dq ':'
-	dq xt_emit
+	dq xt_lit, ':', xt_emit
 	dq xt_get_no_such_word_buffer
 	dq xt_print
 	dq xt_leave
@@ -280,7 +245,6 @@ print_word:
 	call print_string
 	mov rdi, ' '
 	call print_char
-
 
 	pop rdi
 	call string_length
@@ -318,7 +282,6 @@ native "run_if", run_if
 	add pc, 8 ; skip next word
 	jmp next
 
-
 ; ( bool value - )
 ; Does branch if tos != 0
 native "branch_if", branch_if
@@ -342,18 +305,13 @@ native "go_to_tos_if", go_to_tos_if
 .go:
 	jmp rax
 
-colon "0branch", zero_branch
-	dq xt_not
-	dq xt_branch_if
-	dq xt_leave
-
 ; jmp to label right after word
 ; only in precompile
 native "branch", branch 
 	mov pc, [pc] ; pc = void*. Addr is in the next ceil
 	jmp next
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; execute word by it's xt
 ; ( void* xt - )
 native 'execute', execute
 	pop rax
@@ -384,14 +342,11 @@ native 'get_no_such_word_buffer', get_no_such_word_buffer
 	push no_such_word_str
 	jmp next
 
-;;;;;;;; HARDCODE ADDRS THINGS ;;;;;
+;;;;;;;; HARDCODED ADDRS THINGS ;;;;;;;;;;;;
 native 'get_input_buffer', get_input_buffer
 	push input_buffer
 	jmp next
-
-native 'get_compiler_off_string', get_compiler_off_string
-	push compiler_off_string
-	jmp next
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; pushes the xt of the next dq thing onto the stack
 native 'push_next_word_xt', push_next_word_xt
@@ -444,7 +399,6 @@ native 'find_word_hdr', find_word_hdr
 	push rax
 	jmp next
 
-; THE SAME AS WORD BELOW
 ; ( char* buff - void* word_exec_code )
 native 'find_word_xt', find_word_xt
 	pop rdi
@@ -459,23 +413,6 @@ native 'is_word_immediate', is_immediate
 	call take_word_flag
 	push rax
 	jmp next
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-native '.S', show_stack 
-	mov rax, [inital_rsp]
-	mov rcx, rsp
-.loop:
-	cmp rcx, rax
-	jz next
-	mov rdi, [rcx]
-	add rcx, 8 ; ceil size
-	push rax
-	push rcx
-	call print_int
-	call print_newline
-	pop rcx
-	pop rax
-	jmp .loop
 
 ; it's helpful for debug
 native '42', 42, 
@@ -568,7 +505,7 @@ native 'last_word', last_word
 
 ; points to the last word currently being defined 
 native 'here', here
-	mov rax, [building_word_addr] ; test me!!
+	mov rax, [building_word_addr]
 	push rax
 	jmp next
 
@@ -578,7 +515,6 @@ colon ',', comma
 	dq xt_push_word
 	dq xt_leave
 
-;;;;;;;; COMPATIBILITY  ;;;;;;;;;;
 colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
 	dq xt_get_input_buffer
 	dq xt_read_word
@@ -594,7 +530,6 @@ colon "'to_lit", next_and_to_lit, _IMMEDIATE
 
 native 'nop', nothing
 	jmp next
-
 
 native 'exit', exit
 	rpop pc
@@ -622,6 +557,22 @@ native '.', .
 	call print_int
 	call print_newline
 	jmp next
+
+native '.S', show_stack 
+	mov rax, [inital_rsp]
+	mov rcx, rsp
+.loop:
+	cmp rcx, rax
+	jz next
+	mov rdi, [rcx]
+	add rcx, 8 ; ceil size
+	push rax
+	push rcx
+	call print_int
+	call print_newline
+	pop rcx
+	pop rax
+	jmp .loop
 
 ; ( a b - b a ) 
 native 'swap', swap

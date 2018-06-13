@@ -9,8 +9,7 @@
 %define RETURN_STACK_SIZE 512
 %define HEAP_SIZE         4096
 %define NEW_WORDS_MEMORY_SIZE 65536
-; It's not used in this implementation of Forth
-; but it's still here because it migth be usefull in the future
+
 %define STATE_COMPILER 	0x1
 %define STATE_INTERPRET 0x0
 

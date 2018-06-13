@@ -1,4 +1,4 @@
-; Some usefull utility functions
+; Some useful utility functions
 
 global string_length
 global print_string
