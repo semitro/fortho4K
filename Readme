@@ -1,0 +1,201 @@
+This is forto4ka - hand-made forth machine written in x86 assemly language
+
+
+**************************
+List of implemented words:
+**************************
+* to enter a colon word
+native "docol", docol
+* to exit a colon word
+native "leave", leave
+
+* exit from the promgram
+native "bye", bye
+*INIT
+native "init", init
+
+* COMPILE THINGS 
+colon  ":", switch_to_compiler
+native ":to_compiler", to_compiler
+
+* pushes xt to colon word being built at the moment 
+* ( xt )
+native ":push_word", push_word
+
+* if value is on the tos during compile-time
+* but we want it to be there on each invoking of the function
+* this word will help us:
+* ( value -- ) - lit value
+colon "pull_tos_with_literal", pull_tos_with_literal
+
+* ( char* name )
+* creates name of new word (doesn't check if word exists yet )
+* we will find word by this name in future
+* it creates just a header of the colon word being created
+native ":create_word", create_word, _IMMEDIATE
+
+* stop compiling 
+native ";", switch_to_enterpr, _IMMEDIATE
+
+* COMPILER LOOP 
+* compiler and interpeter loops are organazied
+* separately because I think it's more finicky
+colon "compiler", compiler
+
+* MAIN_THING 
+colon "interpret", interpret
+
+* THINGS PRINTING THINGS
+colon "print_welcome", print_welcome
+colon "print_no_word", print_no_word
+
+native "ls", list_all_words
+
+* BRANCHES 
+* ( bool tos - )
+* run next word if tos != 0
+* DANGEROUS: DON'T use macro "branch" after!
+* 'cause it stores addr as word after itself 
+native "run_if", run_if
+
+* ( bool value - )
+* Does branch if tos != 0
+native "branch_if", branch_if
+native "go_to_tos", go_to_tos
+native "go_to_tos_if", go_to_tos_if
+
+* jmp to label right after word
+* only in precompile
+native "branch", branch 
+* execute word by it's xt
+
+* ( void* xt - )
+native 'execute', execute
+
+* (char* str - )
+* prints string
+native 'print', print
+* (char c - )
+* prints single character to stdout
+native 'emit', emit
+
+* prints \n character
+native 'cr', cr
+
+* HARDCODED ADDRS THINGS 
+native 'get_no_such_word_buffer', get_no_such_word_buffer
+native 'get_input_buffer', get_input_buffer
+
+* ( char* - )
+* read a word from stdin and store it into the addr
+native 'read_word', read_word
+
+* (char* -- )
+* read a char and store it
+native 'readc@', readc@
+
+* (char* - )	
+native 'count', count
+
+* ( char* str - n, n.lenght )
+* ( if it's not a number, n.lenght=0, n itself is undef )	
+native 'parse_int', parse_int
+colon 'is_num', is_num
+
+* ( char* buff - void* word_hdr)
+native 'find_word_hdr', find_word_hdr
+
+* ( char* buff - void* word_exec_code )
+native 'find_word_xt', find_word_xt
+
+* ( word hdr - immediate?: boolean ) 
+native 'is_word_immediate', is_immediate
+
+* it's helpful for debug
+native '42', 42, 
+native '43', 43
+
+* MEMORY THINGS 
+* fetch dq from memory
+* ( addr - value )
+native '@', @
+
+* fetch byte from memory
+* ( addr - byte )
+native 'c@', c@
+
+* store dq value by addres
+* ( value, addr -- )
+native '!', store_dq
+
+* store byte value by addres
+* ( byte, addr -- )
+native 'c!', store_byte
+
+* from data stack into return stack
+native '>r', r_to 
+* from return stack into data stack
+native 'r>', r_from
+native 'r@', r_fetch
+
+* take the address of the end of the heap''
+native 'dp', heap_end
+
+* push input buffer addres
+native 'inbuf', inbuf
+
+* push next dq thing onto the stack
+native 'lit', lit
+
+* pushes an adrres of an adress of the header of the last word
+native 'last_word', last_word
+
+* points to the last word currently being defined 
+native 'here', here
+
+* add x to the word-ceil currentl being built 
+* ( x -- )
+colon ',', comma
+colon "'", give_me_xt_of_the_next_word, _IMMEDIATE
+
+* read a word in compile and place its xt here
+colon "'to_lit", next_and_to_lit, _IMMEDIATE
+native 'nop', nothing
+native 'exit', exit
+
+* convert header to xt
+* ( hdr* - xt )
+native 'cfa', cfa
+
+* STACK THINGS 
+native 'dup', dup
+native 'drop', drop
+native '.', .
+native '.S', show_stack 
+
+* ( a b - b a ) 
+native 'swap', swap
+* ( a b c - b c a )
+native 'rot', rot
+
+* STRINGS 
+* ( char* s1, char* s2 - equals? )
+native 'string_equals', string_equals
+
+* LOGIC 
+native '<', less
+native 'not', not
+native '=', equals
+
+native 'and', bit_and
+* ( a,b - a & b )
+native 'land', logical_and
+native 'or', bit_bor
+native 'lor', logical_or
+
+* ARIFMETIC 
+native '+', plus
+native '-', substract
+native '*', mul
+native '/', div
+native '%', mod
