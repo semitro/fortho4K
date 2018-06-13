@@ -1,5 +1,46 @@
 This is forto4ka - hand-made forth machine written in x86 assemly language
 
+Type 'make' or 'chmod +x ./start.sh && ./start.sh' to run the machine
+
+************************************
+Scripts:
+./start.sh: build machine and start it using stdlib
+./rebuild.sh: rebuild machine
+./testing.sh: rebuild and test it
+
+***********************************
+There is:
+~ Interpeter
+~ Compiler: you can define your own word like this : sq dup * ;
+~ Also you can define words using ones you had defined earlier: sq3 dup sq * ;
+~ Compiler supports immediate-words
+~ Stdlib.frt with words like 'IMMEDIATE', 'if', 'then'. It uses Metaprogramming.
+
+***********************************
+Features:
+~ Interptet loop and compiler loop are orginized separatly
+~ Using for_each function in assemly
+~ There's no 0branch but branch_if instead
+
+
+***********************************
+Lacks and bugs:
+~ There's no for-endfor
+~ There's no full compatibility with forthress machine
+~ " word doesn't work in compile-time. You can't use it in your words
+~ here works strange 
+
+**********************************
+Author:
+Oshepkov Artem
+
+vk.com/oshepkovtemka
+github.com/semitro
+
+inspired by Igor Jirkov:
+github.com/sayon
+
+( IFMO System Level Programming course 2018 )
 
 **************************
 List of implemented words:
