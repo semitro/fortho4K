@@ -461,7 +461,7 @@ native 'is_word_immediate', is_immediate
 	jmp next
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-native '.S', show_stack, _IMMEDIATE
+native '.S', show_stack 
 	mov rax, [inital_rsp]
 	mov rcx, rsp
 .loop:

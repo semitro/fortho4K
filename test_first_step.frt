@@ -51,13 +51,15 @@
 	until   ( 0 -> extra one iteration )
 ;
 
-there_is_funny_way_to_left_a_message
-sorry_i_was_too_bored_to_write_word_that_does_it
-so_i_will_use_some_black_magic_MSG
-let's_check_if_prime_number_checker_works
-17 prime? .
-183 prime? .
-205 prime? .
-
-kollats_sequence
-17 kollats_seq
+there_is_a_funny_way_to_left_a_message
+sorry_i_was_too_tired_to_write_word_that_does_it
+" wow, I've done it " cr
+" ************************** " cr
+" ##TEST 2.1: prime numbers " cr
+" 17 " 17 prime? .
+" 183 " prime? .
+" 205 " prime? .
+" ************************** " cr
+" ##TEST 2.2: Kollat's sequence " cr
+" from 17: " cr 17 kollats_seq
+" from 23: "  cr 23 kollats_seq

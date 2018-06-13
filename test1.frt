@@ -1,9 +1,13 @@
-: hello 3 2 1  . drop ;
-: hello2 hello drop ;
-hello2
-: p 2 2 . 3 3 . + . ;
-43 emit
-p
+" ************************** " cr
+" list of words: " cr
+" word xt immediate " cr
+ls
+" ************************** " cr
+" basics: " cr
+" 3 + 2 = " 3 2 + .
 
+" 15 - 17 = " 15 17 - .
+
+" ************************** " cr
 
 bye
