@@ -55,11 +55,17 @@ there_is_a_funny_way_to_left_a_message
 sorry_i_was_too_tired_to_write_word_that_does_it
 " wow, I've done it " cr
 " ************************** " cr
-" ##TEST 2.1: prime numbers " cr
-" 17 " 17 prime? .
-" 183 " prime? .
-" 205 " prime? .
+" Using repeat ... until " cr
+" #2.1: prime numbers " cr
+" 17 " 17 " -" prime? . 
+" 15 " 15 " -" prime? . drop
+" 200 " 200 " -" prime? . drop
 " ************************** " cr
-" ##TEST 2.2: Kollat's sequence " cr
-" from 17: " cr 17 kollats_seq
-" from 23: "  cr 23 kollats_seq
+
+" Using if-then-else inside of repeat-until" cr
+" #2.2: Kollat's sequence " cr
+" from 17: " cr 17 kollats_seq drop
+" from 23: "  cr 23 kollats_seq drop
+" *************************** " cr
+" That's all " cr
+" The machine was made by Oshepkov Artem, group P3202" cr
